@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^.*$ index.php/
+# Composer et la lib JWT nécessitent PHP 5.3 minimum 
+AddHandler application/x-httpd-php-55 .php

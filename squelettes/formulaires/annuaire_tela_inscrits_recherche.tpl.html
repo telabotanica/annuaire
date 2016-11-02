@@ -1,0 +1,43 @@
+<script src="<?= $base_url_styles ?>squelettes/scripts/jquery.js" type="text/javascript"></script>
+<script src="<?= $base_url_styles ?>squelettes/scripts/recherche.js" type="text/javascript"></script>
+<h1> Recherche d'un utilisateur </h1>
+
+<h2> Rechercher et contacter des membres du réseau </h2>
+
+<div>
+	<form method="get" id="recherche_annuaire" class="filetVert" action="<?=$base_url?>">
+	
+			<div><?=$champs['pseudo'] ?></div><br />
+	
+			<div><?=$champs['nom'] ?></div><br />
+		
+			<div><?=$champs['prenom'] ?></div><br />
+			
+			<?php if($est_admin) { ?>
+				<div><?=$champs['mail'] ?></div><br />
+			<?php } ?>
+			
+			<div><?=$champs['specialite_bota_groupes'] ?></div><br />
+			
+			<div><?=$champs['specialite_bota_geo'] ?></div><br />
+
+			<div><?=$champs['pays'] ?></div><br />
+			
+			<!-- <div><?=$champs['specialite_bota_approche'] ?></div><br /> -->
+			
+			<div><?=$champs['code_postal'] ?></div><br />
+			
+			<div><?=$champs['experience_bota'] ?></div><br />
+			
+			<?php if(isset($erreurs)) { ?>
+				<?php foreach($erreurs as $erreur) : ?>
+					<div style="color:#FF0000"> <?=$erreur ?> </div>
+				<?php endforeach; ?>
+			<?php } ?>
+			
+		<div><label style="display:inline;margin-right:20px" for="exclusive"> Rechercher au moins un des termes </label><span><input type="checkbox" id="inclusive" name="inclusive" /></span></div><br />
+		<input type="hidden" id="m" name="m" value="annuaire_recherche_inscrit" />
+		<input type="hidden" id="id_annuaire" name="id_annuaire" value="<?=$aa_id_annuaire ?>" />
+		<input type="submit" value="Rechercher" />	
+	</form>
+</div>	

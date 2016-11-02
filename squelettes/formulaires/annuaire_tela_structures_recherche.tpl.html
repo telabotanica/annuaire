@@ -1,0 +1,28 @@
+<h2> Recherche d'une structure </h2>
+
+<p> <h3> Rechercher une structure appartenant au reseau </h3>
+</p>
+<div id="contenu">
+	<form method="get" id="recherche" action="<?=$base_url?>">
+			<div><?=$champs['nom'] ?></div><br />
+			
+			<div><?=$champs['type'] ?></div><br />
+		
+			<div><?=$champs['pays'] ?></div><br />
+						
+			<div><?=$champs['code_postal'] ?></div><br />
+			
+			<div><?=$champs['mail'] ?></div><br />
+					
+			<?php if(isset($erreurs)) { ?>
+				<?php foreach($erreurs as $erreur) : ?>
+					<div style="color:#FF0000"> <?=$erreur ?> </div>
+				<?php endforeach; ?>
+			<?php } ?>
+			
+		<div><label style="display:inline;margin-right:20px" for="exclusive"> Rechercher au moins un des termes </label><span><input type="checkbox" id="inclusive" name="inclusive" /></span></div><br />
+		<input type="hidden" id="m" name="m" value="annuaire_recherche_inscrit" />
+		<input type="hidden" id="id_annuaire" name="id_annuaire" value="<?=$aa_id_annuaire ?>" />
+		<input type="submit" value="Rechercher" />	
+	</form>
+</div>	

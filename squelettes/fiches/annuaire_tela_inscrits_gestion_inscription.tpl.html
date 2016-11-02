@@ -1,0 +1,71 @@
+<script src="<?= $base_url_styles ?>squelettes/scripts/jquery.js" type="text/javascript"></script>
+<script src="<?= $base_url_styles ?>squelettes/scripts/desinscription.js" type="text/javascript"></script>
+
+<div id="navigation_annuaire"> <?=$navigation ?> </div>
+
+<div id="resume" class="importance4">
+	<?= $carte_id ?>
+	
+	<hr style="clear:both;visibility:hidden" />
+	
+	<div class="resume">
+		<h1 class="titre_gestion"> Mon inscription au reseau </h1>
+		<table class="resume_conteneur">
+			<tbody >
+				<tr class="gestion">
+					<td><b><a href="<?php $url_form = clone($base_url); 
+									$url_form->setVariableRequete('m','annuaire_fiche_utilisateur_consultation'); 
+									$url_form->setVariableRequete('id_annuaire',$id_annuaire); 
+									$url_form->setVariableRequete('id_utilisateur',$id_utilisateur); 
+									echo $url_form; ?>" > Vous êtes inscrit au réseau Tela Botanica </a></b>
+					</td>
+					<td>
+						<form method="post" id="suppression" action="<?php $url_form = clone($base_url); 
+									$url_form->setVariableRequete('m','annuaire_formulaire_suppression_inscription'); 
+									$url_form->setVariableRequete('id_annuaire',$id_annuaire); 
+									$url_form->setVariableRequete('id_utilisateur',$id_utilisateur); 
+									echo $url_form; ?>" >	
+						<input type="hidden" name="mail_suppression" id="mail_suppression" value="<?= $champs['mail']['amv_valeur'] ?>">
+						<input id="bouton_suppression" type="submit" name="bouton_suppression" value="Se desinscrire" />				
+						</form>
+					</td>
+				</tr>
+			</tbody>	
+		</table>
+	</div>
+	<hr style="clear: both; visibility: hidden;">
+
+	<?php foreach($resumes as $resume) : ?>
+		<div class="resume">
+			<h1 class="titre_gestion"> <?= $resume['titre'] ?></h1> 
+			<table class="resume_conteneur">
+				<tbody >
+					<?php if(!empty($resume['elements'])) { ?>
+						<?php foreach($resume['elements'] as $element) : ?>
+							<tr class="gestion">
+								<td><b><a href="<?= $element['lien']?>" > <?=$element['element'] ?> </a></b></td>
+								<?php if(isset($element['lien_desinscrire'])) { ?>
+									<td>
+										<form class="form_bouton" action="<?= $base_url_application.'/jrest/ExecuteurLien'.'/'.str_replace('/', '_', base64_encode($element['lien_desinscrire'])).'/'.str_replace('/', '_', base64_encode($url_cette_page)) ?>">
+											<input type="submit" value="<?= $element['intitule_lien'] ?>" /> 
+										</form>
+									</td>
+								<? } ?>
+							</tr>
+						<?php endforeach ?>
+					<?php } else { ?>
+						<tr class="gestion"><td> <?= $resume['message'] ?> </td> </tr>
+					<?php } ?>
+				</tbody>	
+			</table>
+			
+			<?php if(isset($resume['info'])) { ?>
+				<hr style="clear:both;visibility:hidden" />
+				<span class="info_application"><?= $resume['info'] ?></span>
+			<? } ?>
+			
+		</div>
+		<hr style="clear: both; visibility: hidden;">
+	<?php endforeach ?>	
+<hr style="clear:both;visibility:hidden" />
+</div>

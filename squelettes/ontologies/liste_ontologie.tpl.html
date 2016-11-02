@@ -1,0 +1,40 @@
+<h2><?=$informations['amo_nom'] ?> </h2>
+<p><?php if($informations['amo_description'] != 'NULL') echo $informations['amo_description'] ; ?></p>
+
+<p> <a href="<?php $url_ajout = clone($base_url); 
+				$url_ajout->setVariableRequete('m','liste_ontologie_formulaire_ajout');
+				$url_ajout->setVariableRequete('amo_ce_parent', $informations['amo_id_ontologie']);
+				echo $url_ajout ?>">
+	Ajouter un nouvel élement		
+	</a>
+</p>
+
+<table class="liste">
+	<tr>
+		<th>Identifiant</th>
+		<th>Nom</th>
+		<th>Abreviation</th>
+		<th>Description</th>
+		<th> </th>
+		<th> </th>
+	</tr>
+	<?php foreach ($ontologie as $element) : ?>
+	<tr>
+		<td><?=$element['amo_id_ontologie'] ?></td>
+		<td><?=$element['amo_nom'] ?></td>
+		<td><?=$element['amo_abreviation'] ?></td>
+		<td><?=$element['amo_description'] ?></td>
+		<td> <a href="<?php $url_detail = clone($base_url); 
+				$url_detail->setVariableRequete('m','liste_ontologie_formulaire_modification'); 
+				$url_detail->setVariableRequete('amo_id_ontologie',$element['amo_id_ontologie']); 
+				echo $url_detail; ?>" title="Modifier cet élément"> <img class="icone" src="<?=$base_url_styles ?>squelettes/images/modification.png"/>  </a> </td>
+		<td> <a href="<?php $url_detail = clone($base_url); 
+				$url_detail->setVariableRequete('m','liste_ontologie_suppression'); 
+				$url_detail->setVariableRequete('amo_id_ontologie',$element['amo_id_ontologie']); 
+				echo $url_detail; ?>" title="Supprimer cet élément"> <img class="icone" src="<?=$base_url_styles ?>squelettes/images/suppression.png"/> </a> </td>
+	</tr>
+	<?php endforeach; ?>
+</table>
+<?php if (isset($erreurs['supp'])): ?>
+<span class="symbole_obligatoire"> <?=$erreurs['supp'];?> </span>
+<?php endif; ?>

@@ -1,0 +1,24 @@
+<h2>Inscrits à l'annuaire <?=$annuaire['informations']['aa_nom'] ?></h2>
+<p><?=$annuaire['informations']['aa_description'] ?></p>
+
+
+<h3> Inscrits </h3>
+
+<?php if(isset($pagination)) { echo $pagination; } ?>
+		
+<table class="liste">
+	<tr>
+		<th></th>
+		<?php foreach ($annuaire['colonnes'] as $colonne) : ?>
+			<th><?=$colonne ?></th>
+		<?php endforeach; ?>
+	</tr>
+		<?php foreach ($annuaire['inscrits'] as $inscrit) : ?>
+	<tr>
+		<td><a href="<?= AppControleur::getUrlConsultationProfil($annuaire['informations']['aa_id_annuaire'], $inscrit[$annuaire['colonnes']['champ_id']]); ?>" title="Voir la fiche"> <img class="icone_moyenne" src="<?=$base_url_styles ?>squelettes/images/voir_fiche.png"/> </a></td>
+		<?php foreach ($inscrit as $valeur) : ?>
+			<td><?=$valeur ?></td>
+		<?php endforeach; ?>
+	</tr>
+	<?php endforeach; ?>
+</table>

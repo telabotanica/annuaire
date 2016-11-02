@@ -1,0 +1,6 @@
+<label class="label_checkbox label_champ_annuaire"> <?= $amc_nom ?> : </label><br />
+<input class="checkbox_alignee" type="checkbox" <?php if (isset($valeur_defaut['amv_valeur']) && $valeur_defaut['amv_valeur'] == 1) { echo "checked=checked"; } ?> name="lettre_<?=$amc_id_champ ?>" id="lettre_<?=$amc_id_champ ?>" />	
+<input type="hidden" name="lettre_hidden_<?=$amc_id_champ ?>" id="lettre_hidden_<?=$amc_id_champ ?>" value="lettre_hidden_<?=$amc_id_champ ?>" />
+<?php if(isset($erreurs[$amc_id_champ])) { ?>
+		<div style="color:#FF0000"> <?= $erreurs[$amc_id_champ] ?> </div>
+<?php } ?>

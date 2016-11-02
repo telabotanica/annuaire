@@ -1,0 +1,26 @@
+Bonjour. Ceci est une copie d'un message non modéré envoyé à travers l'annuaire.<br />
+Cordialement,
+L'application annuaire<br />
+
+Message envoyé par : <?=$expediteur_message?> <br /><br />
+<?php if(isset($criteres)) { ?>
+Criteres Utilisés pour la recherche : <br />
+<?php foreach($criteres as $critere) : ?>
+<?= $critere['label']; ?> : <?= $critere['valeur']; ?> <br />
+<?php endforeach; ?>
+<?php } ?>
+
+Sujet du message :
+<pre> 
+<?=$sujet_message?> 
+</pre><br />
+
+Contenu du message :
+<p style="white-space: pre-wrap; font-family: Ubuntu, Verdana, Times;">
+<?=$contenu_message ?>
+</p><br />
+
+Destinataires :
+<pre>
+<?=$destinataires_message ?>
+</pre><br />

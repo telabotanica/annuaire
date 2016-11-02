@@ -1,0 +1,51 @@
+<h2>Liste des annuaires</h2>
+
+<p> <a href="<?php $url_ajout_metadonnee = clone($base_url); 
+				$url_ajout_metadonnee->setVariableRequete('m','annuaire_formulaire_ajout'); 
+				echo $url_ajout_metadonnee; ?>"> Ajout d'un nouvel annuaire </a>
+
+<?php if(!empty($annuaires)) { ?>
+	<table class="liste">
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>Nom</th>
+			<th>Description</th>
+			<th>Code</th>
+		</tr>	
+		<?php foreach ($annuaires as $element) : ?>
+			<tr>
+			<td><a href="<?php $url_detail = clone($base_url); 
+					$url_detail->setVariableRequete('m','annuaire_inscrits'); 
+					$url_detail->setVariableRequete('id_annuaire',$element['aa_id_annuaire']); 
+					echo $url_detail; ?>" title="Voir les inscrits"> 
+					<img class="icone_moyenne" src="<?=$base_url_styles ?>squelettes/images/voir_inscrits.png"/> <br />
+					Voir les inscrits </a></td>
+						<td><a href="<?php $url_detail = clone($base_url); 
+					$url_detail->setVariableRequete('m','annuaire_afficher_inscrits_en_attente'); 
+					$url_detail->setVariableRequete('id_annuaire',$element['aa_id_annuaire']); 
+					echo $url_detail; ?>" title="Voir les inscrits en attente"> 
+					<img class="icone_moyenne" src="<?=$base_url_styles ?>squelettes/images/voir_inscrits_attente.png"/> <br />
+					Voir les inscrits en attente </a></td>
+			<td><a href="<?php $url_detail = clone($base_url); 
+					$url_detail->setVariableRequete('m','annuaire'); 
+					$url_detail->setVariableRequete('id_annuaire',$element['aa_id_annuaire']); 
+					echo $url_detail; ?>" title="Afficher le détail de l'annuaire">
+					<img class="icone_moyenne" src="<?=$base_url_styles ?>squelettes/images/voir_champs.png"/> <br />
+					 Voir les champs </a></td>
+			<td><?=$element['aa_nom'] ?></td>
+			<td><?=$element['aa_description'] ?></td>
+			<td><?=$element['aa_code'] ?></td>
+		</tr>
+		<?php endforeach; ?>
+	</table>
+<?php } else { ?>
+
+<p> Aucun annuaire créé </p>
+
+<?php } ?>
+
+<?php if (isset($erreurs['supp'])): ?>
+<span class="symbole_obligatoire"> <?=$erreurs['supp'];?> </span>
+<?php endif; ?>

@@ -1,0 +1,56 @@
+<form id="modification_cotisation" method="post" action="<?= $url_modification_cotisation ?>">
+
+	<div>Cotisations pour <?= $infos_utilisateur['prenom'].' '.$infos_utilisateur['nom']; ?> </div>
+
+	<table class="liste">
+		<tr>
+			<th>Date</th>
+			<th>Montant</th>
+			<th>Mode</th>
+			<th>Modifier</th>
+			<th>Supprimer</th>
+			<th>Voir le re&ccedil;u</th>
+			<th>Envoyer le re&ccedil;u</th>
+			<th>Date d'envoi du re&ccedil;u</th>
+		</tr>
+		
+		<?php foreach ($cotisations as $cotisation) : ?>
+			<?php if($cotisation['id_cotisation'] == $id_cotisation_a_modifer) { ?>
+				<tr>
+					<td> <input size="10" type=text class="calendrier" id="date_cotisation" name="date_cotisation" value="<?= $cotisation['date_cotisation'] ?>" /> </td>
+					<td> <input size="10" type=text id="montant_cotisation" name="montant_cotisation" value="<?= $cotisation['montant_cotisation'] ?>" /> &euro;</td>
+					<td> <select name="mode_cotisation" id="mode_cotisation">
+							<?php foreach($modes_cotisation as $id_mode_cotisation => $mode_cotisation) : ?>
+								<?php $selection = ''; if($cotisation['mode_cotisation'] == $id_mode_cotisation) $selection='selected="selected"';  ?>
+								<option value="<?= $id_mode_cotisation; ?>" id="mode_cotisation_<?= $id_mode_cotisation; ?>" <?= $selection; ?>> <?= $mode_cotisation; ?> </option>
+							<?php endforeach; ?>
+						</select></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><input type="submit" value="OK" /></td>	
+					<td><a href="<?= $url_liste_cotisations; ?>" > Annuler </a></td>
+				</tr>
+			<?php } else { ?>
+				<tr>
+					<td> <?= $cotisation['date_cotisation'] ?> </td>
+					<td> <?= $cotisation['montant_cotisation'] ?> &euro;</td>
+					<td> <?= $cotisation['mode_cotisation'] ?> </td>
+					<td><a href="<?= $cotisation['url_formulaire_modification']; ?>">Modifer </a></td>
+					<td><a href="<?= $cotisation['url_suppression']; ?>"> Supprimer</a></td>
+					<td><a href="<?= $cotisation['url_voir_recu']; ?>">Voir le re&ccedil;u</a></td>
+					<td><a href="<?= $cotisation['url_envoyer_recu']; ?>">Envoyer le re&ccedil;u</a></td>
+					<?php if($cotisation['date_envoi_recu'] != 0) { ?>
+					<td><?= $cotisation['date_envoi_recu'] ?></td>
+					<?php } else { ?>
+						<td class="recu_non_envoye" style="background-color:red;">Recu non envoy&eacute;</td>
+					<?php } ?>
+				</tr>
+			<?php } ?>
+		<?php endforeach; ?>
+	</table>
+	
+	<input type="hidden" id="url_retour" name="url_retour" value="<?= $url_retour ?>">
+	<input type="hidden" id="id_cotisation" name="id_cotisation" value="<?= $id_cotisation_a_modifer ?>">
+	<input type="hidden" id="id_cotisant" name="id_cotisant" value="<?= $id_utilisateur ?>">
+</form>

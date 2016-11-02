@@ -1,0 +1,22 @@
+<h2> Menu principal </h2>
+
+<div id="conteneur_choix" class="centre">
+		
+	<div class="gauche">
+		<a class="texte_centre" href="<?php $url_annuaires = clone($base_url); 
+				$url_annuaires->setVariableRequete('m','liste_annu'); 
+				echo $url_annuaires;?>" title="Accéder à l'interface de gestion des annuaires"> 
+				<img src="<?=$base_url_styles ?>/squelettes/images/logo_annuaire.png"/> 
+				<h1>Gérer les annuaires</h1>
+		</a>
+	</div>
+
+	<div class="gauche">
+		<a class="texte_centre" href="<?php $url_ontologies = clone($base_url); 
+				$url_ontologies->setVariableRequete('m','liste_listes');
+				echo $url_ontologies;?>" title="Accéder à l'interface de gestion des ontologie">
+				<img src="<?=$base_url_styles ?>squelettes/images/logo_ontologie.png"/>
+				<h1> Gérer les listes d'ontologies </h1>
+		</a><br />
+	</div>
+</div>

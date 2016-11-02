@@ -1,0 +1,54 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          tb_del
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Should-Start:      $all
+# Should-Stop:       $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop scripts emails de l'annuaire
+# Description:       Start/stop les scripts d'envoi d'emails de l'annuaire
+### END INIT INFO
+
+# Script de lancement des scripts de l'annuaire
+# À placer dans /etc/init.d/ puis à lancer : service tb_annuaire start
+# Log :
+# - 2014-09-25 [Aurélien Peronnet] : création de lancement des scripts de l'annuaire
+#
+case "$1" in
+
+start)
+
+echo "Demarrage de annuaire_traitement_mails :"
+nohup /usr/local/sbin/annuaire_traitement_mails 1>/dev/null 2>/dev/null &
+
+;;
+
+stop)
+
+echo "Arret de annuaire_traitement_mails"
+PID=`ps -eaf | grep annuaire_traitement_mails | grep -v grep | tr -s ' ' | cut -d' ' -f2 | head -n1`
+kill -9 ${PID}
+
+;;
+
+status)
+
+echo -n "Voici les PID du processus annuaire_traitement_mails :"
+PID=`ps -eaf | grep annuaire_traitement_mails | grep -v grep | tr -s ' ' | cut -d' ' -f2 | head -n1`
+echo ${PID}
+
+;;
+
+
+*)
+
+echo "Usage:  {start|stop|status}"
+
+exit 1
+
+;;
+
+esac

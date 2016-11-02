@@ -1,0 +1,11 @@
+<?php if (isset($erreurs['titre'])): ?>
+<h3 class="symbole_obligatoire"> <?=$erreurs['titre'];?> </h3>
+<?php endif; ?>
+
+<?php foreach($erreurs as $erreur) : ?>
+    <?php if (is_array($erreur)): ?>
+        <?php foreach($erreur as $erreur_detail) : ?>
+                <div class="erreur"><?=$erreur_detail;?></div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+<?php endforeach; ?>

@@ -1,0 +1,10 @@
+<?php Plugin::Initialiser('cotisation'); 
+$gestion_cotisation = new Cotisation(); 
+$sortie_plugin = $gestion_cotisation->executerPlugin(); ?>
+
+<div id="navigation_annuaire"> <?=$navigation ?> </div>
+
+	
+	<div id="infos_cotisations">
+		<?= $sortie_plugin; ?>
+	</div>

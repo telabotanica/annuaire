@@ -1,0 +1,19 @@
+<style type="text/css">
+	<!--
+	@import url("<?= 'http://'.$_SERVER['SERVER_NAME'].$base_url_styles ?>squelettes/css/mail_admin.css");
+	-->
+</style>
+<img border="0" alt="" src="http://www.tela-botanica.org/sites/accueil/generique/images/graphisme/logo_tela_fond_blanc.png">
+
+<h1><?= $sujet_message; ?></h1><br />
+
+<p class="contenu_message">
+	<?= $contenu_message; ?>
+<p>
+
+<em class="message_suffixe"> Ce message vous est envoyé par le réseau Tela Botanica, auquel vous êtes inscrit. <br />
+-------------------<br />
+Tela Botanica le réseau des botanistes francophones<br />
+accueil@tela-botanica.org<br />
+http://www.tela-botanica.org<br />
+</em>

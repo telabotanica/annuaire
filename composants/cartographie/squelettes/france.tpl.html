@@ -1,0 +1,12 @@
+<div id="cartographie">
+	<img id="carte-img" src="<?=$carte_url;?>" alt="<?=$carte_alt;?>" usemap="#carte-map" />
+	<map name="carte-map">
+<?php foreach ($zones as $code => $zone) : ?>
+<?php if (!empty($zone['poly'])) : ?>
+<?php foreach (explode('|', $zone['poly']) as $coords) : ?>
+		<area shape="poly"  title="<?=$zone['nom']?> (<? echo $zone['info_nombre']; if($zone['info_nombre'] > 1) {echo ' inscrits';} else { echo ' inscrit';} ?>)" class="zone-<?=$code?>" href="<?=$zone['url']?>" coords="<?=$coords?>" />
+<?php endforeach; ?>
+<?php endif; ?>
+<?php endforeach; ?>
+	</map>
+</div>

@@ -1,0 +1,32 @@
+<ul>
+	<li>
+		<a href="<?php $url_profil = clone($base_url); 
+				$url_profil->setVariableRequete('m','annuaire_fiche_utilisateur_consultation'); 
+				$url_profil->setVariableRequete('id_annuaire',$id_annuaire); 
+				echo $url_profil; ?>"> Mon profil </a>
+	</li>
+	<li>
+		<a href="<?php $url_resume = clone($base_url); 
+				$url_resume->setVariableRequete('m','annuaire_fiche_resume_consultation'); 
+				$url_resume->setVariableRequete('id_annuaire',$id_annuaire); 
+				echo $url_resume; ?>"> Ma page perso </a>
+	</li>
+	<li>
+		<a href="<?php $url_gestion = clone($base_url); 
+				$url_gestion->setVariableRequete('m','annuaire_fiche_gestion_consultation'); 
+				$url_gestion->setVariableRequete('id_annuaire',$id_annuaire); 
+				echo $url_gestion; ?>"> Mes inscriptions </a>
+	</li>
+	<li>
+		<a href="<?php $url_carto = clone($base_url); 
+				$url_carto->setVariableRequete('m','annuaire_afficher_carte'); 
+				$url_carto->setVariableRequete('id_annuaire',$id_annuaire); 
+				echo $url_carto; ?>"> Voir la carte des inscrits </a>
+	</li>
+	<li>
+		<a href="<?php $url_recherche = clone($base_url); 
+				$url_recherche->setVariableRequete('m','annuaire_afficher_formulaire_recherche'); 
+				$url_recherche->setVariableRequete('id_annuaire',$id_annuaire); 
+				echo $url_recherche; ?>"> Rechercher des membres du reseau </a>
+	</li>
+</ul>

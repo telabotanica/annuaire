@@ -1,0 +1,26 @@
+<?php 
+if(isset($champs['statut_utilisateur']['amv_valeur']) && $champs['statut_utilisateur']['amv_valeur'] == 1) {
+	$label = 'Débloquer';
+	$action = '0';
+	$titre = 'Cet utilisateur est bloqué';
+	$classe = 'conteneur_bloque';
+} else {
+	$label = 'Bloquer';
+	$action = '1';
+	$titre = 'Bloquer cet utilisateur';
+	$classe = 'conteneur_non_bloque';
+} 
+?>
+
+<div id="conteneur_formulaire_blocage" class="conteneur_blocage <?= $classe ?>">
+
+<h3> <?= $titre ?> </h3>
+<form method="post" id="blocage" action="<?php $url_form = clone($base_url); 
+				$url_form->setVariableRequete('m','annuaire_bloquer_debloquer_utilisateur'); 
+				$url_form->setVariableRequete('id_annuaire',$id_annuaire); 
+				$url_form->setVariableRequete('id_utilisateur',$id_utilisateur); 
+				$url_form->setVariableRequete('action',$action); 
+				echo $url_form; ?>" >				
+<input id="bouton_blocage" type="submit" name="bouton_blocage" value="<?=$label?>" />				
+</form>
+</div>

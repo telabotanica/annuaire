@@ -1,0 +1,48 @@
+<h3> Bienvenue sur Tela Botanica ! </h3>
+
+<p> Votre inscription a été enregistrée avec succès </p>
+
+<a href="<?php AppControleur::getUrlConsultationProfil($id_annuaire, $id_utilisateur); ?>" alt="Compléter votre profil" > <img src="<?=$base_url_styles ?>squelettes/images/completer_profil.png"/>  </a>
+
+<div id="navigation_annuaire"> <?=$navigation ?> </div>
+
+<div id="choix_utilisateur">
+
+		<h2>Profitez de toutes les opportunités que vous offre le réseau TB pour échanger avec les telabotanistes et coopérer à des projets botaniques. </h2>
+		<hr style="visibility: hidden; clear:both;" />
+		
+		<div id="orientation_actu" class="orientation gauche arrondi7 ombre2"><h3><strong>Des actualités collaboratives </strong></h3>
+				<span>Partagez votre point de vue, parlez-nous d'un ouvrage, diffusez des offres d'emplois...</span><br />
+				<ul>
+					<li> <a href="http://www.tela-botanica.org/actu/ecrire/articles_edit.php3?new=oui">Proposer un article </a></li>
+					<li> <a href="http://www.tela-botanica.org/page:recherche_evenements?vue=4">Annoncer un évènement </a></li>
+				</ul>
+		</div>
+		
+		<div id="orientation_reseau" class="orientation droite arrondi7 ombre2"><h3><strong>Des espaces d'échange </strong></h3>
+			<span>Créez, personnalisez votre page perso, communiquez avec les membres grâce à l'annuaire du réseau !</span><br /
+				<ul>
+					<li><a href="http://www.tela-botanica.org/page:inscription"> Enrichir son profil </a></li>
+					<li><a href="http://www.tela-botanica.org/page:membres_du_reseau_annuaire"> Rechercher des telabotanistes </a></li>
+					<li><a href="http://www.tela-botanica.org/page:liste_projets"> Discuter sur les forums </a></li>
+				</ul>
+			</div>
+		
+		<div id="orientation_projets" class="orientation gauche arrondi7 ombre2"><h3><strong>Des projets collectifs </strong></h3>
+			<span> Échangez sur la botanique avec les membres, construisez ensemble des projets et participez à la diffusion de la botanique.</span><br /
+				<ul>
+					<li><a href="http://www.tela-botanica.org/page:liste_projets"> Participer aux projets </a></li>
+					<li><a href="http://www.tela-botanica.org/page:syntheses_des_forums"> Consulter les synthèses des forums </a></li>
+				</ul>
+			</div>
+		
+		<div id="orientation_eflore" class="orientation droite arrondi7 ombre2"><h3><strong>Des outils de gestion de données (CEL) </strong></h3>
+			<span> Créez et gérez en ligne vos observations de terrain, vos photos, et partagez-les avec les membres</span><br /
+					<ul>
+						<li><a href="http://www.tela-botanica.org/appli:cel"> Gérer mes relevés de terrain </a></li>
+						<li><a href="http://www.tela-botanica.org/appli:cel"> Stocker et organiser mes photos </a></li>
+						<li><a href="http://www.tela-botanica.org/actu/article3655.html"> Compléter e-flore dans vos données </a></li>
+					</ul>
+		</div> 
+	</ul>
+</div>

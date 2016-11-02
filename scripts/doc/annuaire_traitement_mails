@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# /usr/local/sbin/annuaire_traitement_mails : traitement de l'envoi des mails modérés de l'annuaire
+# Aurélien Peronnet [07 octobre 2014]
+#
+while true
+do
+	logger "Lancement script annuaire::traitement_mails"
+	ENVOI=`sudo -u telabotap /usr/local/bin/php-cli-52 -f /home/telabotap/www/reseau/annuaire/scripts/cli.php mail -a tous`
+	IFS='--' read -ra RETOUR <<< "$ENVOI"
+	# logger ne supoorte pas \n donc parsing du retour pour faire un log bien propre
+	for i in "${RETOUR[@]}"; do
+	    logger "$i"
+	done
+	logger "Arret script annuaire::traitement_mails"
+	sleep 300
+done

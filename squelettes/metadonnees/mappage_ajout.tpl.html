@@ -1,0 +1,46 @@
+<h2>Ajout d'un nouveau champ de mappage à l'annuaire</h2>
+
+<?php if(!empty($champs_mappage_role)) { ?>
+	<form method="post" action="<?php $url_form = clone($base_url); 
+					$url_form->setVariableRequete('m','mappage_ajout'); 
+					echo $url_form; ?>">
+		<label for="amo_nom">Nom du champ dans l'annuaire mappé</label>
+	  	<select id="at_ressource" name="at_ressource">
+	  		<?php foreach($champs_annuaire as $nom_champ) : ?>
+	  			<option value="<?=$nom_champ?>"><?=$nom_champ ?> </option>
+	  		<?php endforeach; ?>
+	  	</select>
+	  	<br />
+	  	<label for="at_action">Role du champ</label>
+	  	<select id="at_action" name="at_action">
+	  		<?php foreach($champs_mappage as $role => $champ_mappage) : ?>
+	  			<option value="<?=$role?>"> <?=$champ_mappage ?> </option>
+	  		<?php endforeach; ?>
+	  	</select>
+	  	<br />
+	  	<label for="at_valeur">Champ de métadonnées à associer</label>
+	  	<select id="at_valeur" name="at_valeur">
+	  		<?php foreach($champs_metadonnees as $metadonnee) : ?>
+	  			<option value="<?=$metadonnee['amc_id_champ']?>"> <?=$metadonnee['amc_nom'] ?> </option>
+	  		<?php endforeach; ?>
+	  	</select>
+	  	<br />
+	  	<br />
+	  	<input type="hidden" name="id_annuaire" id="id_annuaire" value="<?=$id_annuaire ?>"/>
+	  	
+	  	<input type="submit" value="OK" /> <a href="<?php $url_retour = clone($base_url); 
+					$url_retour->setVariableRequete('m','annuaire'); 
+					$url_retour->setVariableRequete('id_annuaire',$id_annuaire); 
+					echo $url_retour; ?>"> Revenir au détail de l'annuaire </a>	
+	</form>
+	<?php if (isset($erreurs['supp'])): ?>
+	<span class="symbole_obligatoire"> <?=$erreurs['supp'];?> </span>
+	<?php endif; ?>
+	
+<?php } else { ?>
+	<p classe="attention"> Le maximum de rôles a déjà été affecté aux champs </p>
+	<a href="<?php $url_retour = clone($base_url); 
+					$url_retour->setVariableRequete('m','annuaire'); 
+					$url_retour->setVariableRequete('id_annuaire',$id_annuaire); 
+					echo $url_retour; ?>"> Revenir au détail de l'annuaire </a>	
+<?php } ?>

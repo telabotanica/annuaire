@@ -1,0 +1,40 @@
+<?php if($nb_resultats > 0)  {?>
+
+	<?php if($nb_pages > 1)  {?>
+		Pages &nbsp;&nbsp;
+	<?php } ?>
+
+<?php if(($page_en_cours >= $pages_debut_intervalle) && (($page_en_cours != 1)) && ($nb_pages != 1)) { ?> 
+<a class="premiere_page" href="<?= $url_base_pagination.'1' ?>" title="Première page">[1]</a> ...
+<?php } ?>
+
+<?php if($page_en_cours > 1) { ?> 
+<a class="page_prededente" href="<?= $url_base_pagination.(($page_en_cours - 1)) ?>" title="Page précedente">&lt;&lt;</a>&nbsp;&nbsp;
+<?php } ?>
+
+<?php if($nb_pages > 1) { ?>
+	<span class="pages">
+	<?php for($i = $pages_debut_intervalle; ($i < $pages_debut_intervalle+$pages_taille_intervalle) && $i <= $nb_pages ; $i++) : ?>
+			<?php if($page_en_cours == $i) { ?>
+				<span class="page_courante">
+			<?php } else { ?>
+				<span>
+			<?php } ?>
+					<a class="premiere_page" href="<?= $url_base_pagination.(($i))  ?>" title="Page numéro <?= $i ?>"><?= $i ?></a>
+				</span>&nbsp;&nbsp; 
+	<?php endfor; ?>
+	</span>
+<?php } ?>
+
+<?php if($page_en_cours < $nb_pages) { ?> 
+<a class="page_prededente" href="<?= $url_base_pagination.(($page_en_cours + 1)) ?>" title="Page suivante">&gt;&gt;</a>
+<?php } ?> 
+
+<?php if(($page_en_cours != $nb_pages) && ($nb_pages > $pages_taille_intervalle)) { ?> 
+ ... <a class="derniere_page" href="<?= $url_base_pagination.(($nb_pages)) ?>" title="Dernière page">[<?= $nb_pages; ?>]</a>	&nbsp;			
+<?php } ?>
+
+<span class="nb_resultats"> Résultats  <?= $intervalle_min.' - '.$intervalle_max ?> sur <?= $nb_resultats; ?></span>
+
+<?php } ?>
+<hr style="clear:both;visibility:hidden;" />

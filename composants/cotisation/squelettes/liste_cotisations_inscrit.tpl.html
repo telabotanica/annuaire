@@ -1,0 +1,37 @@
+<?php if(!empty($cotisations)) { ?>
+	
+	<div>Cotisations pour <?= $infos_utilisateur['prenom'].' '.$infos_utilisateur['nom']; ?> </div>
+		
+	<table class="liste">
+		<tr>
+			<th>Date</th>
+			<th>Montant</th>
+			<th>Mode</th>
+			<th>Voir le re&ccedil;u</th>
+			<th>Date d'envoi du re&ccedil;u</th>
+		</tr>
+		
+		<?php foreach ($cotisations as $cotisation) : ?>
+			<tr>
+				<td> <?= $cotisation['date_cotisation'] ?> </td>
+				<td> <?= $cotisation['montant_cotisation'] ?> &euro;</td>
+				<td> <?= $cotisation['mode_cotisation'] ?> </td>
+				<?php if($cotisation['date_envoi_recu'] != 0) { ?>
+					<td><a href="<?= $cotisation['url_voir_recu']; ?>">Voir le re&ccedil;u</a></td>
+					<td><?= $cotisation['date_envoi_recu'] ?></td>
+				<?php } else { ?>
+					<td></td> 
+					<td class="recu_non_envoye" style="background-color:red;">Recu non envoy&eacute;</td>
+				<?php } ?>
+			</tr>
+		<?php endforeach; ?>
+	</table>
+<? } ?>	
+
+<?php if(empty($cotisations)) { ?>
+	<p class="attention">Vous n'avez aucune cotisation enregistr&eacute;e </p>
+<? } ?>
+
+<?php if(isset($message)) { ?>
+		<p class="attention"> <?= $message ?> </p>
+<?php } ?>	

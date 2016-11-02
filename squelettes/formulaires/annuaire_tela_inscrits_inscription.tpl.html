@@ -1,0 +1,47 @@
+<script src="<?= $base_url_styles ?>squelettes/scripts/jquery.js" type="text/javascript"></script>
+<script src="<?= $base_url_styles ?>squelettes/scripts/inscription.js" type="text/javascript"></script>
+<script src="<?= $base_url_styles ?>squelettes/scripts/longueurmax.js" type="text/javascript"></script>
+
+<h2> Inscription </h2>
+	<div class="importance4">
+		<h3> Devenez Tela botaniste <br />
+		Rejoignez le réseau de la botanique francophone</h3>
+		
+		L'inscription au réseau Tela Botanica est libre et gratuite. Elle vous permet de :
+		<ul>
+			<li> consulter l'annuaire des personnes inscrites et pouvoir ainsi échanger des informations ;</li>
+			<li> accéder à certaines informations diffusées sur le site ;</li>
+			<li> recevoir la lettre d'information de Tela Botanica, sur l'actualité de la botanique francophone.</li>
+		</ul>
+	</div>
+
+<div id="form_inscription">
+	<form method="post" id="inscription" action="<?php $url_form = clone($base_url); 
+				$url_form->setVariableRequete('m','annuaire_ajout_inscription'); 
+				echo $url_form;
+	 		?>">
+			<div><?=$champs['nom'] ?></div><br />
+		
+			<div><?=$champs['prenom'] ?></div><br />
+			
+			<div><?=$champs['mail'] ?></div><br />
+		
+			<div><?=$champs['pass'] ?></div><br />
+			
+			<div><?=$champs['pays'] ?></div><br />
+			
+			<div><?=$champs['ville'] ?></div><br />
+			
+			<div><?=$champs['code_postal'] ?></div><br />
+			
+			<div><?=$champs['experience_bota'] ?></div><br />
+			
+			<div><?=$champs['lettre_actu'] ?></div><br />
+			
+			<div><label> J'ai pris connaissance des </label> <?=$champs['conditions_utilisation'] ?></div> <br />
+		
+			<input type="hidden" name="aa_id_annuaire" id="aa_id_annuaire" value="<?=$aa_id_annuaire ?>">
+			
+		<input type="submit" value="Valider" />	
+	</form>
+</div>	

@@ -1,0 +1,30 @@
+<ul class="liste_horizontale_simple">
+
+	<li>
+		<a href="<?= $url_carte_monde ?>"> Carte du monde </a>
+	</li>
+
+	<?php if(isset($url_continent) && trim($url_continent) != '') { ?> 
+		<li>
+			<span> >     </span>
+			<a href="<?= $url_continent ?>"> <?= $nom_continent ?> </a>
+		</li>
+	<?php } ?>
+	
+	<?php if(isset($url_pays) && trim($url_pays) != '') { ?> 
+	<li>
+		<span> >     </span>
+		<a href="<?= $url_pays ?>"> <?= $nom_pays ?> </a>
+	</li>
+	<?php } ?>
+	
+	<?php if(isset($url_departement) && trim($url_departement) != '') { ?> 
+	<li >
+		<span> >    </span>
+		<a href="<?= $url_departement ?>"> <?= $nom_departement ?> </a>
+	</li>
+	<?php } ?>
+	
+</ul>
+
+<hr class="separation" />

@@ -1,0 +1,10 @@
+<label class="label_champ_annuaire"> <?= $amc_nom ?> : </label>
+<select name="select_<?=$amc_id_champ?>" id="select_<?=$amc_id_champ ?>">
+		<option name="" id="" value=""> ... </option>			
+<?php foreach($liste_valeurs as $valeur) : ?>
+		<option name="option_<?=$valeur['amo_id_ontologie']?>" id="option_<?=$valeur['amo_id_ontologie']?>" value="<?=$valeur['amo_id_ontologie'] ?>" <?php if (isset($valeur_defaut['amv_valeur'])  && $valeur['amo_id_ontologie'] == $valeur_defaut['amv_valeur']) { echo 'selected="selected"'; } ?> > <?=$valeur['amo_nom']?> </option>			
+<?php endforeach; ?>
+</select>
+<?php if(isset($erreurs[$amc_id_champ])) { ?>
+		<div style="color:#FF0000"> <?= $erreurs[$amc_id_champ] ?> </div>
+<?php } ?>

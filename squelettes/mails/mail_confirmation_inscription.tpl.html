@@ -1,0 +1,11 @@
+<p> Bonjour <?= $nom ?> <?=$prenom ?>. Votre inscription au site Tela Botanica a bien été prise en compte.<br /><br />
+Pour confirmer votre inscription, cliquez sur ce lien <a href="<?=$lien_confirmation_inscription ?>">  <?=$lien_confirmation_inscription ?> </a> <br />
+
+Cordialement,<br />
+
+L'équipe de Tela Botanica
+</p><br />
+<font size="-1"> 
+Ne répondez pas à ce courriel qui est généré automatiquement, pour toute question écrivez plutôt à <a href="mailto:<?= Config::get('mail_moderateur'); ?>"><?= Config::get('mail_moderateur'); ?></a> <br />
+</font> 
+ 

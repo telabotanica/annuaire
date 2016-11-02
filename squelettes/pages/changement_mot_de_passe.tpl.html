@@ -1,0 +1,30 @@
+<script src="<?= $base_url_styles ?>squelettes/scripts/jquery.js" type="text/javascript"></script>
+<script src="<?= $base_url_styles ?>squelettes/scripts/longueurmax.js" type="text/javascript"></script>
+
+<h2> Modification de votre mail / mot de passe </h2>
+<div id="form_modification_inscription" class="filetVert">
+	<form method="post" id="inscription_modification" action="<?php $url_form = clone($base_url); 
+				$url_form->setVariableRequete('m','annuaire_modification_inscription'); 
+				echo $url_form;
+	 		?>">
+	
+			<div><?=$champs['mail'] ?></div><br />
+		
+			<div><?=$champs['pass'] ?></div><br />
+			
+			<input type="hidden" name="aa_id_annuaire" id="aa_id_annuaire" value="<?=$aa_id_annuaire ?>">
+			<input type="hidden" name="id_utilisateur" id="id_utilisateur" value="<?=$id_utilisateur ?>">
+			
+			<?php if(isset($erreurs)) { ?>
+				<?php foreach($erreurs as $erreur) : ?>
+					<div style="color:#FF0000"> <?=$erreur ?> </div>
+				<?php endforeach; ?>
+			<?php } ?>
+		<input type="submit" value="Valider" />	
+		<a href="<?php $url_detail = clone($base_url); 
+				$url_detail->setVariableRequete('m','annuaire_fiche_utilisateur_consultation'); 
+				$url_detail->setVariableRequete('id_annuaire',$aa_id_annuaire); 
+				$url_detail->setVariableRequete('id_utilisateur',$id_utilisateur); 
+				echo $url_detail; ?>" /> Annuler </a>	
+	</form>
+</div>	

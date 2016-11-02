@@ -1,0 +1,90 @@
+<?php echo '<?xml version="1.0" encoding="'.Config::get('sortie_encodage').'"?>' ?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+
+	<channel>
+		<title>Derniers inscrits à l'annuaire</title>
+		<link> http://www.tela-botanica.org</link>
+	 	<description>Flux des derniers inscrits à Tela Botanica</description>
+		<language>fr</language>
+	    
+	    <?php foreach ($derniers_inscrits as $id_utilisateur => $inscrit) : ?>       
+			<item>
+				<title> <?= htmlspecialchars($inscrit['nom']['amv_valeur'].' '.$inscrit['prenom']['amv_valeur']) ?> le <?= $inscrit['date_inscription']['amv_valeur_affichage'] ?></title>
+				<link> http://www.tela-botanica.org/page:membres_du_reseau<?= AppControleur::getUrlConsultationProfil($id_annuaire, $id_utilisateur) ?> </link> 
+				<description>
+					<![CDATA[
+						<?php if(isset($inscrit['image']['amv_valeur']) && trim($inscrit['image']['amv_valeur']) != '') { ?> 
+							<img class="avatar_petit" src="<?= ImageModele::obtenirUrlFichierParId($inscrit['image']['amv_valeur'],'1','S') ?>" alt="avatar" /> <br />
+						<?php } ?>	
+						<a href="http://www.tela-botanica.org/page:membres_du_reseau<?= AppControleur::getUrlConsultationProfil($id_annuaire, $id_utilisateur) ?>" >Voir le profil</a><br />
+						<h3> Coordonnées </h3>
+
+							<div class="element_profil">Email : <span class="valeur_profil"><?=$inscrit['mail']['amv_valeur_affichage'] ?></span> </div>
+	
+							<div class="element_profil">Date de naissance : <span class="valeur_profil"><?=$inscrit['date_naissance']['amv_valeur_affichage'] ?></span> </div>
+						
+							<div class="element_profil">Pseudo : <span class="valeur_profil"><?=$inscrit['pseudo']['amv_valeur_affichage'] ?></span> </div>
+							
+							<div class="element_profil">Pays : <span class="valeur_profil"><?=$inscrit['pays']['amv_valeur_affichage'] ?></span> </div>
+									
+							<div class="element_profil">Ville : <span class="valeur_profil"><?=$inscrit['ville']['amv_valeur_affichage'] ?></span> </div>
+									
+							<div class="element_profil">Code Postal : <span class="valeur_profil"><?=$inscrit['code_postal']['amv_valeur_affichage'] ?></span> </div>
+
+							<div class="element_profil">Je peux héberger des botanistes : <span class="valeur_profil"><?=$inscrit['hebergement']['amv_valeur_affichage'] ?></span> </div>
+					
+							<div class="element_profil">Langues pratiquées : <span class="valeur_profil"><?=$inscrit['langues']['amv_valeur_affichage'] ?></span> </div>
+
+							 <div class="element_profil">Outils préférés : <span class="valeur_profil"><?=$inscrit['outils_reseau']['amv_valeur_affichage'] ?></span> </div>
+							
+							 <div class="element_profil">Profil privé : <span class="valeur_profil"><?= ($inscrit['profil_prive']['amv_valeur'] == 1) ? 'oui' : 'non' ?></span> </div>
+					
+						<h3> Parcours botanique </h3>
+						
+							<div class="element_profil">Présentation : <span class="valeur_profil"><?=$inscrit['presentation']['amv_valeur_affichage'] ?></span> </div>
+							
+							<div class="element_profil">Expérience botanique : <span class="valeur_profil"><?=$inscrit['experience_bota']['amv_valeur_affichage'] ?></span> </div>
+							
+							<div class="element_profil">Mon activité professionnelle : <span class="valeur_profil"><?=$inscrit['rapport_activite_pro_bota']['amv_valeur_affichage'] ?></span> </div>
+									
+							<div class="element_profil">Membre d'une association botanique ou en lien avec la botanique : <span class="valeur_profil"><?=$inscrit['membre_asso_bota']['amv_valeur_affichage'] ?></span> </div>		
+												
+							<!--<div class="element_profil">Quelles flores utilisez vous ? Votre flore de prédilection : <?=$inscrit['flores_utilisees']['amv_valeur_affichage'] ?></div> -->							
+												
+							<div class="element_profil">Spécialités (par groupe de plante) : <span class="valeur_profil"><?=$inscrit['specialite_bota_groupes']['amv_valeur_affichage'] ?></span> </div>
+					
+							<!-- <div class="element_profil">Spécialités (par approche scientifique et outils) : <span class="valeur_profil"><?=$inscrit['specialite_bota_approche']['amv_valeur_affichage'] ?></span> </div>
+							-->
+							<div class="element_profil"> Spécialités (zones géographiques) : <span class="valeur_profil"><?=$inscrit['specialite_bota_geo']['amv_valeur_affichage'] ?></span> </div>
+						
+						<h3> Parcours de telabotaniste </h3>
+						
+							<div class="element_profil">Comment avez vous connu Tela Botanica ? : <span class="valeur_profil"><?=$inscrit['comment_connu_tela']['amv_valeur_affichage'] ?></span> </div>
+							
+							<div class="element_profil">Pour moi, être tela botaniste, c'est avant tout : <span class="valeur_profil"><?=$inscrit['etre_tela_botaniste']['amv_valeur_affichage'] ?></span> </div>
+							
+							<div class="element_profil">Si j'étais une plante sauvage, je serais... : <span class="valeur_profil"><?=$inscrit['etre_plante_sauvage']['amv_valeur_affichage'] ?></span> </div>
+							
+						<h3> Environnement botanique </h3> 
+						
+							<div class="element_profil">Mon site web / blog : <span class="valeur_profil"><?=$inscrit['mon_blog']['amv_valeur_affichage'] ?></span> </div> 
+							
+							<div class="element_profil">Mes sites web / blogs préférés : <span class="valeur_profil"><?=$inscrit['sites_preferes']['amv_valeur_affichage'] ?></span> </div> 
+							
+						<h3> Appartenance à un organisme </h3>	
+						
+							<div class="element_profil">Structure : <span class="valeur_profil"><?=$inscrit['organisme']['amv_valeur_affichage'] ?></span> </div> 
+							
+							<div class="element_profil">Fonction : <span class="valeur_profil"><?=$inscrit['fonction']['amv_valeur_affichage'] ?></span> </div> 
+					]]>
+				</description>
+				<pubDate> 
+					<?php $date_modification_timestamp = strtotime($inscrit['date_inscription']['amv_valeur']);
+						echo date(DATE_RSS, $date_modification_timestamp); ?>
+				</pubDate>
+				<guid>http://www.tela-botanica.org/page:membres_du_reseau<?= AppControleur::getUrlConsultationProfil($id_annuaire, $id_utilisateur) ?></guid>
+	            <dc:format>text/html</dc:format>
+			</item>
+		<?php endforeach; ?>
+	</channel> 
+</rss>

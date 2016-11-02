@@ -1,0 +1,96 @@
+<h2> Modification de votre inscription </h2>
+<div id="form_modification_inscription">
+	<form method="post" id="inscription_modification" action="<?php $url_form = clone($base_url); 
+				$url_form->setVariableRequete('m','annuaire_modification_inscription'); 
+				echo $url_form;
+	 		?>">
+	 		
+	 		<h3> Mes coordonnées </h3>
+	 		
+	 		<div><?=$champs['pseudo'] ?></div>
+	 		<div><?=$champs['utilise_pseudo'] ?></div><br />
+	 		
+	 		<div><?=$champs['date_naissance'] ?></div><br />
+	 		
+			<div><?=$champs['nom'] ?></div><br />
+		
+			<div><?=$champs['prenom'] ?></div><br />
+			
+			<div><?=$champs['mail'] ?></div><br />
+		
+			<div><?=$champs['pass'] ?></div><br />
+			
+			<div><?=$champs['pays'] ?></div><br />
+			
+			<div><?=$champs['adresse'] ?></div>
+			<div><?=$champs['adresse_comp'] ?></div><br />
+			
+			<div><?=$champs['ville'] ?></div><br />
+			
+			<div><?=$champs['code_postal'] ?></div><br />
+			
+			<div><?=$champs['profil_prive'] ?></div><br />
+			
+			<h3> Mon parcours botanique </h3>
+		
+			<div><?=$champs['presentation'] ?></div><br />	
+			
+			<div><?=$champs['experience_bota'] ?></div><br />
+			
+			<div><?=$champs['rapport_activite_pro_bota'] ?></div><br />
+			
+			<div><?=$champs['membre_asso_bota'] ?></div><br />
+			
+			<!-- <div ><?=$champs['flores_utilisees'] ?></div><br /> -->
+						
+			<div><?=$champs['specialite_bota_groupes'] ?></div><br />
+			
+			<!--<div><?=$champs['specialite_bota_approche'] ?></div><br /> -->
+			
+			<div><?=$champs['specialite_bota_geo'] ?></div><br />
+			
+			<div><?=$champs['langues'] ?></div><br />
+			
+			
+			<h3> Mon parcours de telabotaniste </h3>
+			
+			<div><?=$champs['comment_connu_tela'] ?></div><br />
+			
+			<div><?=$champs['outils_reseau'] ?></div><br />
+			
+			<div><?=$champs['etre_tela_botaniste'] ?></div><br />
+			
+			<div><?=$champs['etre_plante_sauvage'] ?></div><br />
+
+			<div><?=$champs['hebergement'] ?></div><br />
+			
+			<h3> Environnement botanique </h3> 
+
+			<div><?=$champs['mon_blog'] ?></div><br /> 
+	
+			<div><?=$champs['sites_preferes'] ?></div><br /> 
+			
+			<h3> Appartenance à un organisme </h3>	
+
+			<div><?=$champs['organisme'] ?></div><br /> 
+			
+			<div><?=$champs['fonction'] ?></div><br /> 
+				
+			<div><?=$champs['lettre_actu'] ?></div><br />
+			
+			<input type="hidden" name="aa_id_annuaire" id="aa_id_annuaire" value="<?=$aa_id_annuaire ?>">
+			<input type="hidden" name="id_utilisateur" id="id_utilisateur" value="<?=$id_utilisateur ?>">
+			
+			<?php if(isset($erreurs)) { ?>
+				<?php foreach($erreurs as $erreur) : ?>
+					<div style="color:#FF0000"> <?=$erreur ?> </div>
+				<?php endforeach; ?>
+			<?php } ?>
+		<input type="submit" value="Valider" />	
+		<a href="<?php $url_detail = clone($base_url); 
+				$url_detail->setVariableRequete('m','annuaire_fiche_utilisateur_consultation'); 
+				$url_detail->setVariableRequete('id_annuaire',$aa_id_annuaire); 
+				$url_detail->setVariableRequete('id_utilisateur',$id_utilisateur); 
+				echo $url_detail; ?>" /> Annuler </a>	
+	</form>
+</div>	

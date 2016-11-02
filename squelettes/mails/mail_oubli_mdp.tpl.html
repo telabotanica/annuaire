@@ -1,0 +1,16 @@
+<p> Bonjour. <br />
+Ce mail vous a été envoyé suite à une demande de réinitialisation de mot de passe.<br />
+
+Votre nouveau mot de passe est <?=$nouveau_mdp ?><br /><br />
+Vous pouvez accéder à votre compte sur cette page : 
+<a href="<?=$lien_profil ?>" title="lien vers votre profil utilisateur" > <?= $lien_profil ?> </a><br />
+
+Cordialement,<br />
+
+L'équipe de Tela Botanica
+<br /><br />
+<font size="-1"> 
+Ne répondez pas à ce courriel qui est généré automatiquement, pour toute question écrivez plutôt à <a href="mailto:<?= Config::get('mail_moderateur'); ?>"><?= Config::get('mail_moderateur'); ?></a> <br />
+</font> 
+</p>
+ 
