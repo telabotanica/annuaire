@@ -1,7 +1,0 @@
-<label class="annuaire label_champ_annuaire" for="textarea_<?=$amc_id_champ?>" style="display:inline;"> <?= $amc_nom ?><span class="indication_caracteres"> (<?= $amc_longueur ?> caractères max) </span> :</label><br />
-<textarea class="annuaire" name="textarea_<?=$amc_id_champ?>" id="textarea_<?=$amc_id_champ?>" maxlength="<?= $amc_longueur ?>" ><?php if(isset($valeur_defaut['amv_valeur'])) { echo $valeur_defaut['amv_valeur']; } ?></textarea>
-<?php if(isset($erreurs[$amc_id_champ])) { ?>
-		<div style="color:#FF0000"> <?= $erreurs[$amc_id_champ] ?> </div>
-<?php } ?>
-
-

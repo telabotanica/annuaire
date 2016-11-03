@@ -1,4 +1,0 @@
-<label class="label_champ_annuaire"> <?= $amc_nom ?> : </label><input type="text" name="text_<?=$amc_id_champ?>" id="text_<?=$amc_id_champ?>" value="<?php if(isset($valeur_defaut['amv_valeur'])) { echo stripslashes($valeur_defaut['amv_valeur']); } ?>"/>
-<?php if(isset($erreurs[$amc_id_champ])) { ?>
-		<div style="color:#FF0000"> <?= $erreurs[$amc_id_champ] ?> </div>
-<?php } ?>
