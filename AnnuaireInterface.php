@@ -4,6 +4,10 @@ interface AnnuaireInterface {
 
 	//
 
+	public function idParCourriel($courriel);
+	public function getDateDerniereModifProfil($id);
+	public function inscrireUtilisateur($donneesProfil);
+
 	// -------------- rétrocompatibilité (11/2016) -------------------
 
 	public function testLoginMdp($courriel, $mdpHache);

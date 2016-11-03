@@ -1,9 +1,10 @@
 <?php
 
 require_once 'Annuaire.php';
+require_once 'services/Auth.php';
 
 /**
- * API REST de l'annuaire (poit d'entrée des services)
+ * API REST de l'annuaire (point d'entrée des services)
  */
 class AnnuaireService extends BaseRestServiceTB {
 
@@ -14,18 +15,18 @@ class AnnuaireService extends BaseRestServiceTB {
 	//public static $AUTODOC_PATH = "autodoc.json";
 
 	/** Configuration du service en JSON */
-	public static $CONFIG_PATH = "config/service.json";
+	const CHEMIN_CONFIG = "config/service.json";
 
 	public function __construct() {
 		// config
 		$config = null;
-		if (file_exists(self::$CONFIG_PATH)) {
-			$contenuConfig = file_get_contents(self::$CONFIG_PATH);
+		if (file_exists(self::CHEMIN_CONFIG)) {
+			$contenuConfig = file_get_contents(self::CHEMIN_CONFIG);
 			// dé-commentarisation du pseudo-JSON @TODO valider cette stratégie cheloute
 			$contenuConfig = preg_replace('`^[\t ]*//.*\n`m', '', $contenuConfig);
 			$config = json_decode($contenuConfig, true);
 		} else {
-			throw new Exception("fichier de configuration " . self::$CONFIG_PATH . " introuvable");
+			throw new Exception("fichier de configuration " . self::CHEMIN_CONFIG . " introuvable");
 		}
 
 		// lib Annuaire
@@ -55,10 +56,6 @@ class AnnuaireService extends BaseRestServiceTB {
 	}
 
 	protected function get() {
-		//var_dump($this->config);
-		//var_dump($this->params);
-		//var_dump($this->resources);
-
 		// réponse positive par défaut;
 		http_response_code(200);
 
@@ -82,9 +79,37 @@ class AnnuaireService extends BaseRestServiceTB {
 		}
 	}
 
+	// https://.../service:annuaire:auth/...
+	protected function auth() {
+		// service d'authentification SSO
+		$auth = new Auth($this->config, $this->lib);
+		$auth->run();
+	}
+
+	protected function post() {
+		
+	}
+
+	/**
+	 * POST
+	 * 	http://www.tela-botanica.org/service:annuaire:utilisateur/24604/message
+	 */
+	protected function message() {
+		
+	}
+
+	/**
+	 * POST
+	 * http://www.tela-botanica.org/service:annuaire:utilisateur (POST: methode=connexion, courriel, mdp, persistance)
+	 */
+	protected function connexion() {
+		
+	}
+
 	// -------------- rétrocompatibilité (11/2016) -------------------
 	// l'organisation des services et les noms d'action sont hérités de
-	// l'annuaire précédent @TODO homogénéiser et réorganiser, un jour
+	// l'annuaire précédent @TODO homogénéiser et réorganiser, dans un ou
+	// plusieurs sous-services (comme "Auth")
 
 	// https://.../service:annuaire:nbinscrits/...
 	protected function nbInscrits() {
@@ -130,11 +155,6 @@ class AnnuaireService extends BaseRestServiceTB {
 		}
 	}
 
-	// https://.../service:annuaire:auth/...
-	protected function auth() {
-		
-	}
-
 	protected function infosParIds() {
 		if (count($this->resources) < 1) {
 			$this->sendError("élément d'URL manquant");
@@ -176,25 +196,5 @@ class AnnuaireService extends BaseRestServiceTB {
 
 		$retour = $this->lib->infosParCourriels($unOuPlusieursCourriels);
 		return $retour;
-	}
-
-	protected function post() {
-		
-	}
-
-	/**
-	 * POST
-	 * 	http://www.tela-botanica.org/service:annuaire:utilisateur/24604/message
-	 */
-	protected function message() {
-		
-	}
-
-	/**
-	 * POST
-	 * http://www.tela-botanica.org/service:annuaire:utilisateur (POST: methode=connexion, courriel, mdp, persistance)
-	 */
-	protected function connexion() {
-		
 	}
 }

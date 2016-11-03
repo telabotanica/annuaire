@@ -14,7 +14,7 @@ abstract class AuthPartner {
 	protected $config;
 
 	/** Injection de dépendance de la lib Utilisateur depuis le service Auth */
-	protected $utilisateur;
+	protected $annuaire;
 
 	/** Jeton brut retourné par le service d'authentification du partenaire */
 	protected $jetonPartenaire;
@@ -28,7 +28,7 @@ abstract class AuthPartner {
 	public function __construct($authLib, $config) {
 		$this->auth = $authLib;
 		$this->config = $config;
-		$this->utilisateur = $authLib->getUtilisateur();
+		$this->annuaire = $authLib->getAnnuaire();
 		$this->idLocal = false;
 	}
 
@@ -42,7 +42,7 @@ abstract class AuthPartner {
 	public function synchroniser() {
 		$courriel = $this->getCourriel();
 		// l'utilisateur existe-t-il déjà ?
-		$this->idLocal = $this->utilisateur->getIdParCourriel($courriel);
+		$this->idLocal = $this->annuaire->idParCourriel($courriel);
 		if ($this->idLocal !== false) {
 			if (! $this->profilEstAJour()) {
 				$this->mettreAJourProfil();
@@ -62,7 +62,7 @@ abstract class AuthPartner {
 		$tsMajPartenaire = $this->getTimestampMajPartenaire();
 		//echo "Timestamp partenaire : "; var_dump($tsMajPartenaire); echo "<br/>";
 		if ($tsMajPartenaire != null) {
-			$dateMajLocale = $this->utilisateur->getDateDerniereModifProfil($this->idLocal);
+			$dateMajLocale = $this->annuaire->getDateDerniereModifProfil($this->idLocal);
 			$tsMajLocale = strtotime($dateMajLocale); // attention à ne pas changer le format de date !
 			//echo "Timestamp local : "; var_dump($tsMajLocale); echo "<br/>";
 			return ($tsMajLocale >= $tsMajPartenaire);
@@ -117,8 +117,8 @@ abstract class AuthPartner {
 		$valeursProfil = $this->getValeursProfilPartenaire();
 		$valeursProfil['partenaire'] = $this->getNomPartenaire();
 		$valeursProfil['id_partenaire'] = $this->getId();
-		// gruik gruik
-		$this->utilisateur->inscrireUtilisateurCommeUnGrosPorc($valeursProfil);
+		// création d'un compte partenaire dans l'annuaire
+		$this->annuaire->inscrireUtilisateur($valeursProfil);
 	}
 
 	protected function mettreAJourProfil() {

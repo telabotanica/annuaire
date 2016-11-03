@@ -1,14 +1,14 @@
 <?php
-
 /**
  * Tentative de service d'authentification / SSO bien organisé
  * SSO - Mettez un tigre dans votre annuaire !
  * @author mathias
- * © Tela Botanica 2015
- * 
- * @TODO se baser sur autre chose que JRest qui est obsolète
+ * © Tela Botanica 2015 - 2016
  */
-class Auth extends JRestService {
+class Auth extends BaseRestServiceTB {
+
+	/** Chemin du fichier de clef */
+	const CHEMIN_CLEF_AUTH = "config/clef-auth.ini";
 
 	/** Clef utilisée pour signer les jetons JWT */
 	private $clef;
@@ -32,14 +32,20 @@ class Auth extends JRestService {
 	protected $cookieSecurise = true;
 
 	/** Bibliothèque de gestion des utilisateurs */
-	protected $utilisateur;
+	protected $annuaire;
 
-	public function __construct($config, $demarrer_session = true) {
-		parent::__construct($config, $demarrer_session);
-		$this->clef = file_get_contents("clef-auth.ini");
+	public function __construct($config, $annuaire) {
+		parent::__construct($config);
+		// Auth est un sous-service : suppression de la première ressource,
+		// qui a servi au service parent (Annuaire) pour aiguiller ici
+		// @TODO faire une classe de sous-service plus astucieuse un jour
+		array_shift($this->resources);
+
+		$this->clef = file_get_contents(self::CHEMIN_CLEF_AUTH);
 		if (strlen($this->clef) < 16) {
 			throw new Exception("Clef trop courte - placez une clef d'au moins 16 caractères dans configurations/clef-auth.ini");
 		}
+
 		$this->forcerSSL = ($this->config['auth']['forcer_ssl'] == "1");
 		$this->dureeJeton = $this->config['auth']['duree_jeton'];
 		$this->dureeCookie = $this->config['auth']['duree_cookie'];
@@ -48,17 +54,16 @@ class Auth extends JRestService {
 		if (! empty($this->config['auth']['domaine_cookie'])) {
 			$this->domaineCookie = $this->config['auth']['domaine_cookie'];
 		}
-		// gestion des utilisateurs @WARNING on utilise un service comme une lib, c'est
-		// mal !!  @TODO séparer service et lib (ou réécrire tout ce foutoir)
-		$this->utilisateur = new Utilisateur($config);
+
+		// lib annuaire
+		$this->annuaire = $annuaire;
 	}
 
 	/**
-	 * Retourne la bobliothèque de gestion des utilisateurs (pour utilisation
-	 * par les classes partenaires)
+	 * Retourne la bibliothèque annuaire (pour les classes partenaires)
 	 */
-	public function getUtilisateur() {
-		return $this->utilisateur;
+	public function getAnnuaire() {
+		return $this->annuaire;
 	}
 
 	/**
@@ -116,30 +121,18 @@ class Auth extends JRestService {
 		$this->envoyerJson($infos);
 	}
 
-	/**
-	 * Lorsqu'appelé sans éléments d'URL (service:annuaire:auth);
-	 * les paramètres GET sont ignorés
-	 */
-	public function getRessource() {
-		//echo "get ressource\n";
-		$this->infosService();
-	}
-
-	/**
-	 * Lorsqu'appelé avec des éléments d'URL (service:annuaire:auth/machin/chose);
-	 * les paramètres GET sont ignorés
-	 * 
-	 * @param array $ressources les éléments d'URL
-	 */
-	public function getElement($ressources) {
-		// Achtétépéèch portouguech lolch
-		$this->verifierSSL();
-		// le premier paramètre d'URL définit la méthode (non-magique)
-		if (count($ressources) > 0) {
-			switch ($ressources[0]) {
+	public function get() {
+		if (count($this->resources) == 0) {
+			// sans élément d'URL, on sort du service
+			$this->infosService();
+		} else {
+			// Achtétépéèch portouguech lolch
+			$this->verifierSSL();
+			// le premier paramètre d'URL définit la méthode (non-magique)
+			switch ($this->resources[0]) {
 				case 'login':
 				case 'connexion':
-					$this->connexion($ressources);
+					$this->connexion();
 					break;
 				case 'logout':
 				case 'deconnexion':
@@ -158,6 +151,7 @@ class Auth extends JRestService {
 				case 'info':
 				default:
 					$this->infosService();
+			
 			}
 		}
 	}
@@ -203,10 +197,8 @@ class Auth extends JRestService {
 	 * tout va bien, sinon renvoie une erreur et détruit le cookie
 	 * @WARNING si vous n'utilisez pas urlencode() pour fournir le mot de passe,
 	 * le caractère "&" posera problème en GET
-	 * 
-	 * @param array $ressources non utilisé
 	 */
-	protected function connexion($ressources) {
+	protected function connexion() {
 		$login = $this->getParam('login');
 		$password = $this->getParam('password', null);
 		$partenaire = $this->getParam('partner');
@@ -252,7 +244,7 @@ class Auth extends JRestService {
 			$this->erreur("authentication failed", 401);
 		}
 		// infos utilisateur
-		$infos = $this->utilisateur->getIdentiteParCourriel($login);
+		$infos = $this->annuaire->getIdentiteParCourriel($login);
 		//var_dump($infos); exit;
 		// getIdentiteParCourriel retourne toujours le courriel comme clef de tableau en lowercase
 		$login = strtolower($login);
@@ -264,7 +256,7 @@ class Auth extends JRestService {
 		}
 		$infos = $infos[$login];
 		// date de dernière modification du profil
-		$dateDerniereModif = $this->utilisateur->getDateDerniereModifProfil($infos['id'], true);
+		$dateDerniereModif = $this->annuaire->getDateDerniereModifProfil($infos['id'], true);
 		$infos['dateDerniereModif'] = $dateDerniereModif;
 		// infos partenaire
 		$infos = array_merge($infos, $infosPartenaire);

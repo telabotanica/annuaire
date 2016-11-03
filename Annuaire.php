@@ -33,6 +33,19 @@ class Annuaire implements AnnuaireInterface {
 		// dans un endroit correct (adapters.nomdeladapteur par exemple)
 		$this->adapter = new $adapterName($this->config);
 	}
+
+	public function idParCourriel($courriel) {
+		return $this->adapter->idParCourriel($courriel);
+	}
+
+	public function getDateDerniereModifProfil($id) {
+		return $this->adapter->getDateDerniereModifProfil($id);
+	}
+
+	public function inscrireUtilisateur($donneesProfil) {
+		return $this->adapter->inscrireUtilisateur($donneesProfil);
+	}
+
 	// -------------- rétrocompatibilité (11/2016) -------------------
 
 	/**
