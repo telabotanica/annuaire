@@ -1,3 +1,4 @@
+// pseudo-JSON : les lignes commençant par // sont ignorées
 {
-	
+	"adapter": "AnnuaireWP"
 }

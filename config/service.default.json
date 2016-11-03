@@ -1,3 +1,25 @@
+// pseudo-JSON : les lignes commençant par // sont ignorées
 {
-	
+	"domain_root": "localhost",
+	"base_uri": "/service:annuaire-ng:",
+	//"admins": [
+	//	"mathias@tela-botanica.org"
+	//],
+	"services": {
+		"auth": {
+			// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
+			"mdp_magique_hache": "274a7dcc0c54ce23b1b81e0f585ddcef",
+			// si true, refusera toute connexion non-HTTPS
+			"forcer_ssl": false,
+			"nom_cookie": "tb_auth",
+			"duree_cookie": 31536000,
+			"duree_jeton": 900,
+			// utiliser 'tela-botanica.org' ou '.tela-botanica.org' pour lever la restriction sur les sous-domaines
+			"domaine_cookie": "localhost",
+			// si true, Curl ne vérifiera pas l'authenticité de l'hôte (SSL de Sequoia trop vieux)
+			"curl_soft_ssl": false,
+			// si forcer_ssl est false et qu'on accède au service en HTTP, mettre à false pour obtenir le cookie
+			"cookie_securise": false
+		}
+	}
 }
