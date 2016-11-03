@@ -6,5 +6,6 @@ composer.phar
 # composer.lock
 
 /jrest/jrest.ini.php
+framework.php
 
 /nbproject/

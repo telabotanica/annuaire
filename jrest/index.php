@@ -27,5 +27,9 @@ spl_autoload_register('__autoloadJRest');
 require_once('../initialisation.php');
 
 $jRest = new JRest();
+restore_exception_handler();
+restore_error_handler();
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
 $jRest->exec();
 ?>
