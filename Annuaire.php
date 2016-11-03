@@ -43,4 +43,19 @@ class Annuaire implements AnnuaireInterface {
 	public function testLoginMdp($courriel, $mdpHache) {
 		return $this->adapter->testLoginMdp($courriel, $mdpHache);
 	}
+
+	/**
+	 * Renvoie le nombre d'inscrits
+	 */
+	public function nbInscrits() {
+		return $this->adapter->nbInscrits();
+	}
+
+	public function infosParIds($unOuPlusieursIds) {
+		return $this->adapter->infosParIds($unOuPlusieursIds);
+	}
+
+	public function infosParCourriels($unOuPlusieursCourriels) {
+		return $this->adapter->infosParCourriels($unOuPlusieursCourriels);
+	}
 }

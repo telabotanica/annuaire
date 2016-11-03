@@ -7,5 +7,6 @@ composer.lock
 
 /config/config.json
 /config/service.json
+/config/clef-auth.ini
 
 /nbproject/

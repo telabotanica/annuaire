@@ -38,6 +38,22 @@ class AnnuaireService extends BaseRestServiceTB {
 		parent::__construct($config);
 	}
 
+	/**
+	 * Renvoie une brève explication de l'utilisation du service
+	 * @TODO faire mieux (style autodoc.json)
+	 */
+	protected function usage() {
+		$utilisation = array(
+			'Utilisation' => 'https://'
+				. $this->config['domain_root']
+				. $this->config['base_uri']
+				. ':service'
+				. '[/ressource1[/ressource2[...]]]',
+			'service' => '(utilisateur|testloginmdp|nbinscrits|auth)'
+		);
+		$this->sendJson($utilisation);
+	}
+
 	protected function get() {
 		//var_dump($this->config);
 		//var_dump($this->params);
@@ -46,8 +62,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		// réponse positive par défaut;
 		http_response_code(200);
 
-		$nomService = strtolower($this->resources[0]);
-		// @TODO strtolower
+		$nomService = strtolower(array_shift($this->resources));
 		//var_dump($nomService);
 		switch($nomService) {
 			case 'testloginmdp':
@@ -57,54 +72,114 @@ class AnnuaireService extends BaseRestServiceTB {
 				$this->nbInscrits();
 				break;
 			case 'utilisateur':
+				$this->utilisateur();
 				break;
 			case 'auth':
-				array_shift($this->resources);
-				if (count($this->resources) > 0) {
-					$nextResource = $this->resources[0];
-					switch($nextResource) {
-						case "get-folders":
-							$this->getFolders();
-							break;
-					}
-				}
+				$this->auth();
 				break;
 			default:
-				usage();
+				$this->usage();
 		}
 	}
 
 	// -------------- rétrocompatibilité (11/2016) -------------------
+	// l'organisation des services et les noms d'action sont hérités de
+	// l'annuaire précédent @TODO homogénéiser et réorganiser, un jour
 
-	protected function infosParIds($unOuPlusieursIds) {
-		
-	}
-
-	protected function identiteParCourriel($unOuPlusieursCourriels) {
-		
-	}
-
-	protected function identiteCompleteParCourriel($courriel, $format="json") {
-		
-	}
-
-	public function prenomNomParCourriel($unOuPlusieursCourriels) {
-		
-	}
-
+	// https://.../service:annuaire:nbinscrits/...
 	protected function nbInscrits() {
-		
+		$retour = $this->lib->nbInscrits();
+		$this->sendJson($retour);
 	}
 
+	// https://.../service:annuaire:testloginmdp/...
 	protected function testLoginMdp() {
 		if (count($this->resources) < 2) {
-			$this->sendError("ressource manquante");
+			$this->sendError("élément d'URL manquant");
 		}
 		$courriel = $this->resources[0];
 		$mdpHache = $this->resources[1];
 
 		$retour = $this->lib->testLoginMdp($courriel, $mdpHache);
 		$this->sendJson($retour);
+	}
+
+	// https://.../service:annuaire:utilisateur/...
+	protected function utilisateur() {
+		$ressource = strtolower(array_shift($this->resources));
+		switch($ressource) {
+			case "":
+				$this->usage();
+				break;
+			case "identite-par-courriel":
+				$this->identiteParCourriel();
+				break;
+			case "identite-complete-par-courriel":
+				$this->identiteCompleteParCourriel();
+				break;
+			case "prenom-nom-par-courriel":
+				$this->prenomNomParCourriel();
+				break;
+			case "infosparids":
+				$this->infosParIds();
+				break;
+			default:
+				// réenfilage cracra pour ne pas dé-génériciser infosParIds()
+				array_unshift($this->resources, $ressource);
+				$this->infosParIds();
+		}
+	}
+
+	// https://.../service:annuaire:auth/...
+	protected function auth() {
+		
+	}
+
+	protected function infosParIds() {
+		if (count($this->resources) < 1) {
+			$this->sendError("élément d'URL manquant");
+		}
+		$unOuPlusieursIds = $this->resources[0];
+
+		$retour = $this->lib->infosParids($unOuPlusieursIds);
+		// @TODO formatage des résultats
+		$this->sendJson($retour);
+	}
+
+	protected function identiteParCourriel() {
+		$retour = $this->infosParCourriels();
+		// @TODO formatage des résultats
+		$this->sendJson($retour);
+	}
+
+	protected function identiteCompleteParCourriel() {
+		$retour = $this->infosParCourriels();
+		$format = "json";
+		if (count($this->resources) > 0 && (strtolower($this->ressources[0]) == "xml")) {
+			$format = "xml";
+		}
+		// @TODO formatage des résultats
+		$this->sendJson($retour);
+	}
+
+	protected function prenomNomParCourriel() {
+		$retour = $this->infosParCourriels();
+		// @TODO formatage des résultats
+		$this->sendJson($retour);
+	}
+
+	protected function infosParCourriels() {
+		if (count($this->resources) < 1) {
+			$this->sendError("élément d'URL manquant");
+		}
+		$unOuPlusieursCourriels = array_shift($this->resources);
+
+		$retour = $this->lib->infosParCourriels($unOuPlusieursCourriels);
+		return $retour;
+	}
+
+	protected function post() {
+		
 	}
 
 	/**
