@@ -49,6 +49,14 @@ class Annuaire implements AnnuaireInterface {
 	// -------------- rétrocompatibilité (11/2016) -------------------
 
 	/**
+	 * Vérifie l'accès en se basant sur $id et $mdp si ceux-ci sont fournis; sinon,
+	 * lit les valeurs transmises par l'authentification HTTP BASIC AUTH
+	 */
+	public function verifierAcces($id = null, $mdp = null) {
+		return $this->adapter->verifierAcces($id, $mdp);
+	}
+
+	/**
 	 * Vérifie si un utilisateur ayant l'adresse email $courriel existe, et si
 	 * son mot de passe haché est bien $mdpHache; retourne true si ces conditions
 	 * sont réunies, false sinon

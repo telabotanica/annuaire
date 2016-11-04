@@ -6,8 +6,6 @@
 	//	"mathias@tela-botanica.org"
 	//],
 	"auth": {
-		// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
-		"mdp_magique_hache": "274a7dcc0c54ce23b1b81e0f585ddcef",
 		// si true, refusera toute connexion non-HTTPS
 		"forcer_ssl": false,
 		"nom_cookie": "tb_auth",

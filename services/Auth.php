@@ -234,7 +234,7 @@ class Auth extends BaseRestServiceTB {
 			}
 		} else {
 			// authentification locale
-			$acces = $this->verifierAcces($login, $password);
+			$acces = $this->annuaire->verifierAcces($login, $password);
 		}
 		if ($acces === false) {
 			$this->detruireCookie();
