@@ -17,6 +17,10 @@
 			// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
 			"mdp_magique_hache": ""
 		}
+	},
+	"auth": {
+		// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
+		"mdp_magique_hache": "274a7dcc0c54ce23b1b81e0f585ddcef"
 	}
 	//,
 	//"newsletter": {

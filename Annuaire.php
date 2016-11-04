@@ -52,8 +52,17 @@ class Annuaire implements AnnuaireInterface {
 	 * Vérifie l'accès en se basant sur $id et $mdp si ceux-ci sont fournis; sinon,
 	 * lit les valeurs transmises par l'authentification HTTP BASIC AUTH
 	 */
-	public function verifierAcces($id = null, $mdp = null) {
-		return $this->adapter->verifierAcces($id, $mdp);
+	public function verifierAcces($courriel = null, $mdp = null) {
+		return $this->adapter->verifierAcces($courriel, $mdp);
+	}
+
+	/**
+	 * Vérifie si un utilisateur ayant l'adresse email $courriel existe, et si
+	 * son mot de passe est bien $mdpHache; retourne true si ces conditions
+	 * sont réunies, false sinon
+	 */
+	public function identificationCourrielMdp($courriel, $mdp) {
+		return $this->adapter->identificationCourrielMdp($courriel, $mdp);
 	}
 
 	/**
@@ -61,8 +70,8 @@ class Annuaire implements AnnuaireInterface {
 	 * son mot de passe haché est bien $mdpHache; retourne true si ces conditions
 	 * sont réunies, false sinon
 	 */
-	public function testLoginMdp($courriel, $mdpHache) {
-		return $this->adapter->testLoginMdp($courriel, $mdpHache);
+	public function identificationCourrielMdpHache($courriel, $mdpHache) {
+		return $this->adapter->identificationCourrielMdpHache($courriel, $mdpHache);
 	}
 
 	/**

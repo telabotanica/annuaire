@@ -125,7 +125,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		$courriel = $this->resources[0];
 		$mdpHache = $this->resources[1];
 
-		$retour = $this->lib->testLoginMdp($courriel, $mdpHache);
+		$retour = $this->lib->identificationCourrielMdpHache($courriel, $mdpHache);
 		$this->sendJson($retour);
 	}
 

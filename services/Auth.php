@@ -244,7 +244,7 @@ class Auth extends BaseRestServiceTB {
 			$this->erreur("authentication failed", 401);
 		}
 		// infos utilisateur
-		$infos = $this->annuaire->getIdentiteParCourriel($login);
+		$infos = $this->annuaire->infosParCourriels($login);
 		//var_dump($infos); exit;
 		// getIdentiteParCourriel retourne toujours le courriel comme clef de tableau en lowercase
 		$login = strtolower($login);
