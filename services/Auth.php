@@ -71,11 +71,9 @@ class Auth extends BaseRestServiceTB {
 	 * @TODO essayer de choisir entre anglais et français
 	 */
 	protected function infosService() {
-		$uri = $this->config['settings']['baseAlternativeURL'];
-		if ($uri == '') {
-			$uri = $this->config['settings']['baseURL'];
-		}
-		$uri = $uri . "auth/";
+		$protocole = $this->isHTTPS ? 'https://' : 'http://';
+		$uri = $protocole . $this->config['domain_root'] . $this->config['base_uri'];
+		$uri = $uri . $this->firstResourceSeparator . "auth/";
 
 		$infos = array(
 			'service' => 'TelaBotanica/annuaire/auth',
@@ -118,7 +116,7 @@ class Auth extends BaseRestServiceTB {
 				)
 			)
 		);
-		$this->envoyerJson($infos);
+		$this->sendJson($infos);
 	}
 
 	public function get() {
@@ -203,7 +201,7 @@ class Auth extends BaseRestServiceTB {
 		$password = $this->getParam('password', null);
 		$partenaire = $this->getParam('partner');
 		if ($login == '' || $password == '') {
-			$this->erreur("parameters <login> and <password> required");
+			$this->sendError("parameters <login> and <password> required");
 		}
 		$acces = false;
 		// connexion à un partenaire ?
@@ -213,7 +211,7 @@ class Auth extends BaseRestServiceTB {
 			try {
 				$fichierClasse = getcwd() . "/services/auth/$classeAuth.php"; // @TODO vérifier si getcwd() est fiable dans ce cas
 				if (! file_exists($fichierClasse)) {
-					$this->erreur("unknown partner '$partenaire'");
+					$this->sendError("unknown partner '$partenaire'");
 				}
 				require $fichierClasse;
 				$authPartenaire = new $classeAuth($this, $this->config);
@@ -230,7 +228,7 @@ class Auth extends BaseRestServiceTB {
 				// le login peut ne pas être un courriel
 				$login = $authPartenaire->getCourriel();
 			} catch(Exception $e) {
-				$this->erreur($e->getMessage(), 500);
+				$this->sendError($e->getMessage(), 500);
 			}
 		} else {
 			// authentification locale
@@ -241,7 +239,7 @@ class Auth extends BaseRestServiceTB {
 			// redirection si demandée - se charge de sortir du script en cas de succès
 			$this->rediriger();
 			// si la redirection n'a pas eu lieu
-			$this->erreur("authentication failed", 401);
+			$this->sendError("authentication failed", 401);
 		}
 		// infos utilisateur
 		$infos = $this->annuaire->infosParCourriels($login);
@@ -252,7 +250,7 @@ class Auth extends BaseRestServiceTB {
 			// redirection si demandée - se charge de sortir du script en cas de succès
 			$this->rediriger();
 			// si la redirection n'a pas eu lieu
-			$this->erreur("could not get user info");
+			$this->sendError("could not get user info");
 		}
 		$infos = $infos[$login];
 		// date de dernière modification du profil
@@ -267,7 +265,7 @@ class Auth extends BaseRestServiceTB {
 		// redirection si demandée - se charge de sortir du script en cas de succès
 		$this->rediriger($jwt);
 		// envoi
-		$this->envoyerJson(array(
+		$this->sendJson(array(
 			"session" => true,
 			"token" => $jwt,
 			"duration" => intval($this->dureeJeton),
@@ -289,7 +287,7 @@ class Auth extends BaseRestServiceTB {
 		// redirection si demandée - se charge de sortir du script en cas de succès
 		$this->rediriger();
 		// si la redirection n'a pas eu lieu
-		$this->envoyerJson(array(
+		$this->sendJson(array(
 				"session" => false,
 				"token" => $jwt,
 				"token_id" => $this->nomCookie
@@ -354,9 +352,9 @@ class Auth extends BaseRestServiceTB {
 		$this->rediriger($jetonRetour);
 		// renvoi jeton
 		if ($jetonRetour === null) {
-			$this->erreur($erreur);
+			$this->sendError($erreur);
 		} else {
-			$this->envoyerJson(array(
+			$this->sendJson(array(
 					"session" => true,
 					"token" => $jetonRetour,
 					"duration" => intval($this->dureeJeton),
@@ -402,17 +400,17 @@ class Auth extends BaseRestServiceTB {
 		if ($jwt == null) {
 			$jwt = $this->getParam('token');
 			if ($jwt == '') {
-				$this->erreur("parameter <token> or Authorization header required");
+				$this->sendError("parameter <token> or Authorization header required");
 			}
 		}
 		try {
 			$jeton = JWT::decode($jwt, $this->clef, array('HS256'));
 			$jeton = (array) $jeton;
 		} catch (Exception $e) {
-			$this->erreur($e->getMessage());
+			$this->sendError($e->getMessage());
 			exit;
 		}
-		$this->envoyerJson(true);
+		$this->sendJson(true);
 	}
 
 	/**
@@ -543,107 +541,19 @@ class Auth extends BaseRestServiceTB {
 		setcookie($this->nomCookie, "", -1, '/', null, $this->cookieSecurise);
 	}
 
-	// ---------------- Méthodes à génériciser ci-dessous ----------------------------------
-
 	/**
 	 * Message succinct pour méthodes / actions non implémentées
 	 */
 	protected function nonImplemente() {
-		$this->erreur("not implemented");
+		$this->sendError("not implemented");
 	}
 	
 	/**
 	 * Si $this->forcerSSL vaut true, envoie une erreur et termine le programme si SSL n'est pas utilisé
 	 */
 	protected function verifierSSL() {
-		if ($this->forcerSSL === true) {
-			if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') {
-				$this->erreur("HTTPS required");
-				exit;
-			}
-		}
-	}
-
-	protected function getParamChain($names) {
-		if (! is_array($names)) {
-			// Hou ? (cri de chouette solitaire)
-		}
-	}
-
-	/**
-	 * Capture un paramètre de requête ($_REQUEST)
-	 * 
-	 * @param string $name nom du paramètre à capturer
-	 * @param string $default valeur par défaut si le paramètre n'est pas défini (ou vide, voir ci-dessous)
-	 * @param bool $traiterVideCommeDefaut si le paramètre est défini mais vide (''), le considèrera comme non défini
-	 * 
-	 * @return string la valeur du paramètre si défini, sinon la valeur par défaut
-	 */
-	protected function getParam($name, $default=null, $traiterVideCommeDefaut=false) {
-		$ret = $default;
-		if (isset($_REQUEST[$name])) {
-			if ($traiterVideCommeDefaut === false || $_REQUEST[$name] !== '') {
-				$ret = $_REQUEST[$name];
-			}
-		}
-		return $ret;
-	}
-
-	/**
-	 * Capture un paramètre GET
-	 * 
-	 * @param string $name nom du paramètre GET à capturer
-	 * @param string $default valeur par défaut si le paramètre n'est pas défini (ou vide, voir ci-dessous)
-	 * @param bool $traiterVideCommeDefaut si le paramètre est défini mais vide (''), le considèrera comme non défini
-	 * 
-	 * @return string la valeur du paramètre si défini, sinon la valeur par défaut
-	 */
-	protected function getGetParam($name, $default=null, $traiterVideCommeDefaut=false) {
-		$ret = $default;
-		if (isset($_GET[$name])) {
-			if ($traiterVideCommeDefaut === false || $_GET[$name] !== '') {
-				$ret = $_GET[$name];
-			}
-		}
-		return $ret;
-	}
-
-	/**
-	 * Capture un paramètre POST
-	 * 
-	 * @param string $name nom du paramètre POST à capturer
-	 * @param string $default valeur par défaut si le paramètre n'est pas défini (ou vide, voir ci-dessous)
-	 * @param bool $traiterVideCommeDefaut si le paramètre est défini mais vide (''), le considèrera comme non défini
-	 * 
-	 * @return string la valeur du paramètre si défini, sinon la valeur par défaut
-	 */
-	protected function getPostParam($name, $default=null, $traiterVideCommeDefaut=false) {
-		$ret = $default;
-		if (isset($_POST[$name])) {
-			if ($traiterVideCommeDefaut === false || $_POST[$name] !== '') {
-				$ret = $_POST[$name];
-			}
-		}
-		return $ret;
-	}
-
-	/**
-	 * Envoie une erreur HTTP $code (400 par défaut) avec les données $data en JSON
-	 * 
-	 * @param mixed $data données JSON de l'erreur - généralement array("error" => "raison de l'erreur") - si
-	 * 		seule une chaîne est transmise, sera convertie en array("error" => $data)
-	 * @param number $code code HTTP de l'erreur, par défaut 400 (bad request)
-	 * @param boolean $exit si true (par défaut), termine le script après avoir envoyé l'erreur
-	 */
-	protected function erreur($data, $code=400, $exit=true) {
-		if (! is_array($data)) {
-			$data = array(
-				"error" => $data
-			);
-		}
-		http_response_code($code);
-		$this->envoyerJson($data);
-		if ($exit === true) {
+		if ($this->forcerSSL === true && ! $this->isHTTPS) {
+			$this->sendError("HTTPS required");
 			exit;
 		}
 	}
@@ -651,6 +561,7 @@ class Auth extends BaseRestServiceTB {
 
 /**
  * Mode moderne pour PHP < 5.4
+ * @TODO supprimer lors du démantèlement de Sequoia
  */
 if (!function_exists('http_response_code')) {
 	function http_response_code($code = NULL) {

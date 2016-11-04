@@ -1,6 +1,6 @@
 {
     "require": {
         "firebase/php-jwt": "^2.0",
-        "telabotanica/tb-base-rest-service": "0.1b"
+        "telabotanica/tb-base-rest-service": "0.1.3"
     }
 }
