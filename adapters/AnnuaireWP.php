@@ -25,21 +25,40 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$this->prefixe = $configBdd['prefixe'];
 	}
 
+	// @TODO À TESTER
 	public function idParCourriel($courriel) {
-		throw new Exception("idParCourriel: pas encore implémenté");
-		// SELECT ID FROM test_users WHERE user_email = 'mathias@tela-botanica.org' AND user_status != 1 AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key');
+		// protection
+		$courrielP = $this->bdd->quote($courriel);
+		// requête
+		$q = "SELECT ID FROM {$this->prefixe}users "
+			. "WHERE user_email = $courrielP "
+			. "AND user_status != 1 "
+			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key')"
+		;
+		$r = $this->bdd->query($q);
+		$d = $r->fetch();
+
+		return intval($d['ID']);
 	}
 
+	// @TODO A TESTER
 	public function getDateDerniereModifProfil($id) {
-		throw new Exception("getDateDerniereModifProfil: pas encore implémenté");
-		// !! nécessite BP
-		// SELECT last_updated FROM test_bp_xprofile_data WHERE user_id  =1
-	}
-
-	public function inscrireUtilisateur($donneesProfil) {
-		throw new Exception("inscrireUtilisateur: pas encore implémenté");
-		// Attention aux hooks
-		// https://fr.wordpress.org/plugins/json-api-user/
+		// protection
+		$idP = $this->bdd->quote($id);
+		// requête !! nécessite BP
+		$q = "SELECT last_updated FROM {$this->prefixe}bp_xprofile_data "
+			. "WHERE user_id = $idP"
+		;
+		$r = $this->bdd->query($q);
+		if ($r === false) {
+			return false;
+		}
+		$d = $r->fetch();
+		if (! empty($r['last_updated'])) {
+			return $r['last_updated'];
+		} else {
+			return false;
+		}
 	}
 
 	// OK
@@ -47,9 +66,12 @@ class AnnuaireWP extends AnnuaireAdapter {
 		// - pourquoi "8" et "false" ?
 		// - on s'en fout, c'est écrit ça dans la doc et ça marche
 		$passwordHasher = new Hautelook\Phpass\PasswordHash(8, false);
-		
+
+		// protection
+		$courrielP = $this->bdd->quote($courriel);
+		// requête
 		$q = "SELECT user_pass FROM {$this->prefixe}users "
-			. "WHERE user_email = '$courriel' "
+			. "WHERE user_email = $courrielP "
 			. "AND user_status != 1 "
 			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
 		;
@@ -75,9 +97,14 @@ class AnnuaireWP extends AnnuaireAdapter {
 	public function identificationCourrielMdpHache($courriel, $mdpHache) {
 		// un compte activé non-spam a un "user_status" != 1 dans "users" (non
 		// spam) et n'a pas de clef "activation_key" dans "usermeta"
+
+		// protection
+		$courrielP = $this->bdd->quote($courriel);
+		$mdpHacheP = $this->bdd->quote($mdpHache);
+		// requête
 		$q = "SELECT ID FROM {$this->prefixe}users "
-			. "WHERE user_email = '$courriel' "
-			. "AND user_pass = '$mdpHache' "
+			. "WHERE user_email = $courrielP "
+			. "AND user_pass = $mdpHacheP "
 			. "AND user_status != 1 "
 			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
 		;
@@ -90,20 +117,39 @@ class AnnuaireWP extends AnnuaireAdapter {
 		}
 	}
 
+	// OK
 	public function nbInscrits() {
 		// un compte activé non-spam a un "user_status" != 1 dans "users" (non
 		// spam) et n'a pas de clef "activation_key" dans "usermeta"
-		// 
-		// SELECT count(*) FROM test_users WHERE user_status != 1 AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key');
-		throw new Exception("nbInscrits: pas encore implémenté");
+
+		$q = "SELECT count(*) as nb FROM {$this->prefixe}users "
+			. "WHERE user_status != 1 "
+			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
+		;
+		$r = $this->bdd->query($q);
+		$d = $r->fetch();
+
+		return intval($d['nb']);
 	}
 
 	public function infosParIds($unOuPlusieursIds) {
+		$infos = array();
+		foreach ($unOuPlusieursIds as $idOuCourriel) {
+			$infosUtilisateur = $this->infosUtilisateur($idOuCourriel);
+			$infos[] = $infosUtilisateur;
+		}
 		throw new Exception("infosParIds: pas encore implémenté");
 	}
 
 	public function infosParCourriels($unOuPlusieursCourriels) {
-		throw new Exception("infosParCourriels: pas encore implémenté");
+		return $this->infosParIds($unOuPlusieursCourriels);
+		//throw new Exception("infosParCourriels: pas encore implémenté");
+	}
+
+	public function inscrireUtilisateur($donneesProfil) {
+		throw new Exception("inscrireUtilisateur: pas encore implémenté");
+		// Attention aux hooks
+		// https://fr.wordpress.org/plugins/json-api-user/
 	}
 
 	/**
@@ -117,30 +163,39 @@ class AnnuaireWP extends AnnuaireAdapter {
 		// 0) ID ou courriel ?
 		$idUtilisateur = false;
 		$courrielUtilisateur = false;
+
 		if (is_numeric($idOuCourriel)) {
 			$idUtilisateur = $idOuCourriel;
-			$clauseUtilisateur = "ID = $idUtilisateur";
+			$clauseUtilisateur = "ID = " . $this->bdd->quote($idUtilisateur);
 		} else {
 			$courrielUtilisateur = $idOuCourriel;
-			$clauseUtilisateur = "user_email = '$courrielUtilisateur'";
+			$clauseUtilisateur = "user_email = " . $this->bdd->quote($courrielUtilisateur);
 		}
 
 		// 1) utilisateur
-		$q = "SELECT * FROM test_users "
+		$q = "SELECT * FROM {$this->prefixe}users "
 			. "WHERE user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key') "
-			. $clauseUtilisateur;
-		
+			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key') "
+			. $clauseUtilisateur
+		;
+		$r = $this->bdd->query($q);
+		$d = $r->fetch();
 		// récupérer l'ID
-		// $idUtilisateur = ?
+		$idUtilisateur = $d['ID'];
 
-		// 2) métadonnées
-		// SELECT user_id, meta_key, meta_value FROM test_usermeta WHERE meta_key IN ('nickname','first_name','last_name','description','test_user_level','test_capabilities','last_activity') AND user_id = 1;
+		if ($usermeta) {
+			// 2) métadonnées
+			// SELECT user_id, meta_key, meta_value FROM test_usermeta WHERE meta_key IN ('nickname','first_name','last_name','description','test_user_level','test_capabilities','last_activity') AND user_id = 1;
+		}
 
-		// 3) profil étendu
-		// SELECT xd.user_id, xf.name, xd.value FROM test_bp_xprofile_fields xf LEFT JOIN test_bp_xprofile_data xd ON xd.field_id = xf.id WHERE xd.user_id = 1;
+		if ($xprofile) {
+			// 3) profil étendu
+			// SELECT xd.user_id, xf.name, xd.value FROM test_bp_xprofile_fields xf LEFT JOIN test_bp_xprofile_data xd ON xd.field_id = xf.id WHERE xd.user_id = 1;
+		}
 
-		// 4) groupes
-		// SELECT bg.id, bg.slug, bg.name, bgm.is_admin, bgm.is_mod FROM test_bp_groups bg LEFT JOIN test_bp_groups_members bgm ON bgm.group_id = bg.id WHERE bgm.is_confirmed = 1 AND bgm.is_banned = 0 AND bgm.user_id = 1;
+		if ($groups) {
+			// 4) groupes
+			// SELECT bg.id, bg.slug, bg.name, bgm.is_admin, bgm.is_mod FROM test_bp_groups bg LEFT JOIN test_bp_groups_members bgm ON bgm.group_id = bg.id WHERE bgm.is_confirmed = 1 AND bgm.is_banned = 0 AND bgm.user_id = 1;
+		}
 	}
 }
