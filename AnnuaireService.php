@@ -122,8 +122,9 @@ class AnnuaireService extends BaseRestServiceTB {
 		if (count($this->resources) < 2) {
 			$this->sendError("élément d'URL manquant");
 		}
-		$courriel = $this->resources[0];
-		$mdpHache = $this->resources[1];
+		$courriel = array_shift($this->resources);
+		// astuce si le mot de passe contient un slash
+		$mdpHache = implode('/',$this->resources);
 
 		$retour = $this->lib->identificationCourrielMdpHache($courriel, $mdpHache);
 		$this->sendJson($retour);
