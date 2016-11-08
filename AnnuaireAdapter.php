@@ -3,6 +3,8 @@
 require_once 'AnnuaireInterface.php';
 
 /**
+ * Facilitateur pour créer une implémentation de l'annuaire
+ * 
  * Tout adapteur implémentant l'annuaire devrait étendre cette classe
  * https://fr.wikipedia.org/wiki/Adaptateur_(patron_de_conception)
  */
@@ -60,5 +62,42 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 			// @TODO se débrouiller pour ne pas faire ça !!
 			return true; // ça fait un peu mal...
 		}
+	}
+
+	/**
+	 * Crée un nom Wiki (de la forme "JeanTalus") à partir des données de l'utilisateur;
+	 * gère l'utilisation du pseudo mais pas la collision de noms Wiki @TODO s'en occuper
+	 * @WARNING rétrocompatibilité apacher
+	 */
+	protected function formaterNomWiki($intitule, $defaut="ProblemeNomWiki") {
+		$nw = $this->convertirEnCamelCase($intitule);
+		// on sait jamais
+		if ($nw == "") {
+			$nw = $defaut;
+		}
+
+		return $nw;
+	}
+
+	protected function convertirEnCamelCase($str) {
+		// Suppression des accents
+		$str = $this->supprimerAccents($str);
+		// Suppression des caractères non alphanumériques
+		// @WARNING le ucwords() marche mieux avec la ligne ci-dessous, mais on
+		// ne le fait pas pour rester compatible et ne pas désynchroniser les
+		// comptes :/
+		// $str = preg_replace('/-/i', ' ', $str);
+		$str = preg_replace('/[^\da-z]/i', '', ucwords(strtolower($str)));
+		return $str;
+	}
+
+	protected function supprimerAccents($str, $charset='utf-8') {
+		$str = htmlentities($str, ENT_NOQUOTES, $charset);
+
+		$str = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+		$str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
+		$str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
+
+		return $str;
 	}
 }

@@ -18,8 +18,9 @@ class AnnuaireWP extends AnnuaireAdapter {
 
 		// connexion BDD
 		$configBdd = $this->config['adapters']['AnnuaireWP']['bdd'];
-		$dsn = $configBdd['protocole'] . ':host=' . $configBdd['hote'] . ';dbname=' . $configBdd['base'];
+		$dsn = $configBdd['protocole'] . ':host=' . $configBdd['hote'] . ';dbname=' . $configBdd['base'] . ";charset=utf8";
 		$this->bdd = new PDO($dsn, $configBdd['login'], $configBdd['mdp']);
+		$this->bdd->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 		// préfixe
 		$this->prefixe = $configBdd['prefixe'];
@@ -133,17 +134,25 @@ class AnnuaireWP extends AnnuaireAdapter {
 	}
 
 	public function infosParIds($unOuPlusieursIds) {
+		// sécurité : paf! dans l'array
+		if (!is_array($unOuPlusieursIds)) $unOuPlusieursIds = array($unOuPlusieursIds);
+
 		$infos = array();
 		foreach ($unOuPlusieursIds as $idOuCourriel) {
-			$infosUtilisateur = $this->infosUtilisateur($idOuCourriel);
-			$infos[] = $infosUtilisateur;
+			$infosUtilisateur = null;
+			try {
+				$infosUtilisateur = $this->infosUtilisateur($idOuCourriel);
+				$infosUtilisateur['nom_wiki'] = $this->formaterNomWiki($infosUtilisateur['display_name']);
+			} catch (Exception $e) {
+				// on échoue silencieusement pour ne pas casser la boucle
+			}
+			$infos[$idOuCourriel] = $infosUtilisateur;
 		}
-		throw new Exception("infosParIds: pas encore implémenté");
+		return $infos;
 	}
 
 	public function infosParCourriels($unOuPlusieursCourriels) {
 		return $this->infosParIds($unOuPlusieursCourriels);
-		//throw new Exception("infosParCourriels: pas encore implémenté");
 	}
 
 	public function inscrireUtilisateur($donneesProfil) {
@@ -153,16 +162,18 @@ class AnnuaireWP extends AnnuaireAdapter {
 	}
 
 	/**
-	 * Retourne tout ce qu'il y a à savoir sur l'utilisateur :
+	 * Retourne tout ce qu'il y a à savoir sur l'utilisateur, organisé selon les
+	 * tables Wordpress / Buddypress :
 	 * - champs de la table WP_users (toujours)
-	 * - métadonnées de la table WP_usermeta (si $usermeta=true)
-	 * - profil étendu des tables WP_bp_xprofile* (si $xprofile=true)
-	 * - infos de groupes de la table WP_bp_groups_members (si $groups=true)
+	 * - "_meta": métadonnées de la table WP_usermeta (si $usermeta=true)
+	 * - "_xprofile": profil étendu des tables WP_bp_xprofile* (si $xprofile=true)
+	 * - "_groups": infos de groupes de la table WP_bp_groups_members (si $groups=true)
 	 */
 	protected function infosUtilisateur($idOuCourriel, $usermeta=true, $xprofile=true, $groups=true) {
 		// 0) ID ou courriel ?
 		$idUtilisateur = false;
 		$courrielUtilisateur = false;
+		$infos = array();
 
 		if (is_numeric($idOuCourriel)) {
 			$idUtilisateur = $idOuCourriel;
@@ -171,31 +182,77 @@ class AnnuaireWP extends AnnuaireAdapter {
 			$courrielUtilisateur = $idOuCourriel;
 			$clauseUtilisateur = "user_email = " . $this->bdd->quote($courrielUtilisateur);
 		}
+		//var_dump($idUtilisateur);
+		//var_dump($courrielUtilisateur);
 
 		// 1) utilisateur
 		$q = "SELECT * FROM {$this->prefixe}users "
 			. "WHERE user_status != 1 "
 			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key') "
-			. $clauseUtilisateur
+			. "AND " . $clauseUtilisateur
 		;
 		$r = $this->bdd->query($q);
 		$d = $r->fetch();
+		if ($d === false) {
+			throw new Exception("Impossible de trouver l'utilisateur [$idOuCourriel]");
+		}
 		// récupérer l'ID
 		$idUtilisateur = $d['ID'];
+		// garnir les infos
+		$infos = $d;
 
 		if ($usermeta) {
+			$infos['_meta'] = array();
 			// 2) métadonnées
-			// SELECT user_id, meta_key, meta_value FROM test_usermeta WHERE meta_key IN ('nickname','first_name','last_name','description','test_user_level','test_capabilities','last_activity') AND user_id = 1;
+			$q = "SELECT user_id, meta_key, meta_value FROM {$this->prefixe}usermeta "
+				. "WHERE meta_key IN ('nickname','first_name','last_name','description','{$this->prefixe}user_level','{$this->prefixe}capabilities','last_activity') "
+				. "AND user_id = $idUtilisateur"
+			;
+			$r = $this->bdd->query($q);
+			if ($r !== false) {
+				$d = $r->fetchAll();
+				foreach ($d as $meta) {
+					$infos['_meta'][$meta['meta_key']] = $meta['meta_value'];
+				}
+			}
 		}
 
 		if ($xprofile) {
+			$infos['_xprofile'] = array();
 			// 3) profil étendu
-			// SELECT xd.user_id, xf.name, xd.value FROM test_bp_xprofile_fields xf LEFT JOIN test_bp_xprofile_data xd ON xd.field_id = xf.id WHERE xd.user_id = 1;
+			$q = "SELECT xd.user_id, xf.name, xd.value "
+				. "FROM {$this->prefixe}bp_xprofile_fields xf "
+				. "LEFT JOIN {$this->prefixe}bp_xprofile_data xd ON xd.field_id = xf.id "
+				. "WHERE xd.user_id = $idUtilisateur"
+			;
+			$r = $this->bdd->query($q);
+			if ($r !== false) {
+				$d = $r->fetchAll();
+				foreach ($d as $xprofile) {
+					$infos['_xprofile'][$xprofile['name']] = $xprofile['value'];
+				}
+			}
 		}
 
 		if ($groups) {
+			$infos['_groups'] = array();
 			// 4) groupes
-			// SELECT bg.id, bg.slug, bg.name, bgm.is_admin, bgm.is_mod FROM test_bp_groups bg LEFT JOIN test_bp_groups_members bgm ON bgm.group_id = bg.id WHERE bgm.is_confirmed = 1 AND bgm.is_banned = 0 AND bgm.user_id = 1;
+			$q = "SELECT bg.id, bg.slug, bg.name, bgm.is_admin, bgm.is_mod "
+				. "FROM {$this->prefixe}bp_groups bg "
+				. "LEFT JOIN {$this->prefixe}bp_groups_members bgm ON bgm.group_id = bg.id "
+				. "WHERE bgm.is_confirmed = 1 "
+				. "AND bgm.is_banned = 0 "
+				. "AND bgm.user_id = $idUtilisateur"
+			;
+			$r = $this->bdd->query($q);
+			if ($r !== false) {
+				$d = $r->fetchAll();
+				foreach ($d as $group) {
+					$infos['_groups'][$group['id']] = $group;
+				}
+			}
 		}
+
+		return $infos;
 	}
 }

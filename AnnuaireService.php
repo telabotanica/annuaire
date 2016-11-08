@@ -52,7 +52,8 @@ class AnnuaireService extends BaseRestServiceTB {
 				. '[/ressource1[/ressource2[...]]]',
 			'service' => '(utilisateur|testloginmdp|nbinscrits|auth)'
 		);
-		$this->sendJson($utilisation);
+		// 400 pour signifier l'appel d'une URL non gérée
+		$this->sendError($utilisation);
 	}
 
 	protected function get() {
@@ -140,6 +141,9 @@ class AnnuaireService extends BaseRestServiceTB {
 			case "identite-par-courriel":
 				$this->identiteParCourriel();
 				break;
+			case "identite-par-nom-wiki": // usage interne
+				$this->identiteParNomWiki();
+				break;
 			case "identite-complete-par-courriel":
 				$this->identiteCompleteParCourriel();
 				break;
@@ -150,42 +154,155 @@ class AnnuaireService extends BaseRestServiceTB {
 				$this->infosParIds();
 				break;
 			default:
-				// réenfilage cracra pour ne pas dé-génériciser infosParIds()
-				array_unshift($this->resources, $ressource);
-				$this->infosParIds();
+				// si on passe un ID numérique directement, ça marche aussi
+				if (is_numeric($ressource)) {
+					// réenfilage cracra pour ne pas dé-génériciser infosParIds()
+					array_unshift($this->resources, $ressource);
+					$this->infosParIds();
+				} else {
+					$this->usage();
+				}
 		}
 	}
 
+	/**
+	 * Retourne des informations publiques pour une liste d'ids numériques
+	 * d'utilisateurs, séparé par des virgules
+	 */
 	protected function infosParIds() {
 		if (count($this->resources) < 1) {
 			$this->sendError("élément d'URL manquant");
 		}
 		$unOuPlusieursIds = $this->resources[0];
+		$unOuPlusieursIds = explode(',', $unOuPlusieursIds);
+		// les ids sont toujours entiers
+		$unOuPlusieursIds = array_map(function($v) {
+			return intval($v);
+		}, $unOuPlusieursIds);
 
 		$retour = $this->lib->infosParids($unOuPlusieursIds);
 		// @TODO formatage des résultats
 		$this->sendJson($retour);
 	}
 
-	protected function identiteParCourriel() {
-		$retour = $this->infosParCourriels();
-		// @TODO formatage des résultats
+	/**
+	 * Retourne un jeu mégarestreint d'informations publiques pour une adresse
+	 * courriel donnée :
+	 * - id
+	 * - prenom
+	 * - nom
+	 * @WARNING, ne considère pas le pseudo - obsolète !
+	 */
+	protected function prenomNomParCourriel() {
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$retour[$email] = array(
+				"id" => $i['ID'],
+				"prenom" => $i['_meta']['first_name'],
+				"nom" => $i['_meta']['last_name'],
+			);
+		}
 		$this->sendJson($retour);
 	}
 
+	/**
+	 * Retourne les identités pouvant correspondre à un nom wiki donné
+	 * @WARNING usage interne
+	 * - id
+	 * - prenom
+	 * - nom
+	 * - pseudo
+	 * - intitule (nom à afficher)
+	 */
+	protected function identiteParNomWiki() {
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
+			$retour[$email] = array(
+				"id" => $i['ID'],
+				"prenom" => $i['_meta']['first_name'],
+				"nom" => $i['_meta']['last_name'],
+				"pseudo" => $pseudo,
+				"pseudoUtilise" => ($pseudo == $i['display_name']), // obsolète
+				"intitule" => $i['display_name'],
+				"nomWiki" => $i['nom_wiki']
+			);
+		}
+		$this->sendJson($retour);
+	}
+
+
+	/**
+	 * Retourne un jeu restreint d'informations publiques pour une adresse
+	 * courriel donnée :
+	 * - id
+	 * - prenom
+	 * - nom
+	 * - pseudo
+	 * - pseudoUtilise
+	 * - intitule (nom à afficher)
+	 * - nomWiki
+	 */
+	protected function identiteParCourriel() {
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
+			$retour[$email] = array(
+				"id" => $i['ID'],
+				"prenom" => $i['_meta']['first_name'],
+				"nom" => $i['_meta']['last_name'],
+				"pseudo" => $pseudo,
+				"pseudoUtilise" => ($pseudo == $i['display_name']), // obsolète
+				"intitule" => $i['display_name'],
+				"nomWiki" => $i['nom_wiki']
+			);
+		}
+		$this->sendJson($retour);
+	}
+
+
+	/**
+	 * Retourne un jeu plus large d'informations publiques pour une adresse
+	 * courriel donnée (intégralité du "profil Tela Botanica") :
+	 * - id
+	 * - prenom
+	 * - nom
+	 * - pseudo
+	 * - pseudoUtilise
+	 * - intitule (nom à afficher)
+	 * - nomWiki
+	 * - ...
+	 * - ...
+	 */
 	protected function identiteCompleteParCourriel() {
-		$retour = $this->infosParCourriels();
+		$infos = $this->infosParCourriels();
 		$format = "json";
 		if (count($this->resources) > 0 && (strtolower($this->ressources[0]) == "xml")) {
 			$format = "xml";
 		}
-		// @TODO formatage des résultats
-		$this->sendJson($retour);
-	}
-
-	protected function prenomNomParCourriel() {
-		$retour = $this->infosParCourriels();
-		// @TODO formatage des résultats
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
+			$retour[$email] = array(
+				"id" => $i['ID'],
+				"prenom" => $i['_meta']['first_name'],
+				"nom" => $i['_meta']['last_name'],
+				"pseudo" => $pseudo,
+				"pseudoUtilise" => ($pseudo == $i['display_name']), // obsolète
+				"intitule" => $i['display_name'],
+				"nomWiki" => $i['nom_wiki']
+			);
+		}
 		$this->sendJson($retour);
 	}
 
@@ -194,6 +311,11 @@ class AnnuaireService extends BaseRestServiceTB {
 			$this->sendError("élément d'URL manquant");
 		}
 		$unOuPlusieursCourriels = array_shift($this->resources);
+		$unOuPlusieursCourriels = explode(',', $unOuPlusieursCourriels);
+		// les courriels doivent contenir un arrobase @TODO utile ?
+		$unOuPlusieursCourriels = array_filter($unOuPlusieursCourriels, function($v) {
+			return (strpos($v, '@') !== false);
+		});
 
 		$retour = $this->lib->infosParCourriels($unOuPlusieursCourriels);
 		return $retour;

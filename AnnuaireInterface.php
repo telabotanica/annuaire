@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Liste des méthodes publiques de l'annuaire
+ * @TODO documenter proprement la liste des champs que l'annuaire doit retourner
+ */
 interface AnnuaireInterface {
 
 	//
