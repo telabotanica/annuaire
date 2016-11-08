@@ -26,6 +26,8 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$this->prefixe = $configBdd['prefixe'];
 	}
 
+	// ------------- implémentation de la classe abstraite ---------------------
+
 	// @TODO À TESTER
 	public function idParCourriel($courriel) {
 		// protection
@@ -133,32 +135,19 @@ class AnnuaireWP extends AnnuaireAdapter {
 		return intval($d['nb']);
 	}
 
-	public function infosParIds($unOuPlusieursIds) {
-		// sécurité : paf! dans l'array
-		if (!is_array($unOuPlusieursIds)) $unOuPlusieursIds = array($unOuPlusieursIds);
-
-		$infos = array();
-		foreach ($unOuPlusieursIds as $idOuCourriel) {
-			$infosUtilisateur = null;
-			try {
-				$infosUtilisateur = $this->infosUtilisateur($idOuCourriel);
-				$infosUtilisateur['nom_wiki'] = $this->formaterNomWiki($infosUtilisateur['display_name']);
-			} catch (Exception $e) {
-				// on échoue silencieusement pour ne pas casser la boucle
-			}
-			$infos[$idOuCourriel] = $infosUtilisateur;
-		}
-		return $infos;
-	}
-
-	public function infosParCourriels($unOuPlusieursCourriels) {
-		return $this->infosParIds($unOuPlusieursCourriels);
-	}
-
 	public function inscrireUtilisateur($donneesProfil) {
 		throw new Exception("inscrireUtilisateur: pas encore implémenté");
 		// Attention aux hooks
 		// https://fr.wordpress.org/plugins/json-api-user/
+	}
+
+	// micro-optimisation (économise 1 requête)
+	protected function infosUtilisateurParCourriel($courriel) {
+		return $this->infosUtilisateur($courriel);
+	}
+
+	protected function infosUtilisateurParId($id) {
+		return $this->infosUtilisateur($id);
 	}
 
 	/**
@@ -253,6 +242,25 @@ class AnnuaireWP extends AnnuaireAdapter {
 			}
 		}
 
+		// formatage standard
+		$infos = $this->formaterInfosUtilisateur($infos);
+
 		return $infos;
+	}
+
+	/**
+	 * Renvoie les données de l'utilisateur conformément à la liste de champs
+	 * attendue par le service
+	 * @param infos Array infos utilisateur produites par infosUtilisateur()
+	 */
+	protected function formaterInfosUtilisateur(array $infos) {
+		var_dump($infos);
+		$retour = array("coucou");
+		
+		// $pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
+		// $sousTableau['pseudoUtilise'] = ($pseudo == $i['display_name']); // obsolète
+
+		var_dump($retour);
+		return $retour;
 	}
 }

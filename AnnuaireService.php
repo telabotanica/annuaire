@@ -255,16 +255,15 @@ class AnnuaireService extends BaseRestServiceTB {
 		// formatage des résultats
 		$retour = array();
 		foreach($infos as $email => $i) {
-			$pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
-			$retour[$email] = array(
-				"id" => $i['ID'],
-				"prenom" => $i['_meta']['first_name'],
-				"nom" => $i['_meta']['last_name'],
-				"pseudo" => $pseudo,
-				"pseudoUtilise" => ($pseudo == $i['display_name']), // obsolète
-				"intitule" => $i['display_name'],
-				"nomWiki" => $i['nom_wiki']
-			);
+			$retour[$email] = $this->sousTableau($i, array(
+				"id",
+				"prenom",
+				"nom",
+				"pseudo",
+				"pseudoUtilise", // obsolète
+				"intitule",
+				"nomWiki"
+			));
 		}
 		$this->sendJson($retour);
 	}
@@ -292,16 +291,15 @@ class AnnuaireService extends BaseRestServiceTB {
 		// formatage des résultats
 		$retour = array();
 		foreach($infos as $email => $i) {
-			$pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
-			$retour[$email] = array(
-				"id" => $i['ID'],
-				"prenom" => $i['_meta']['first_name'],
-				"nom" => $i['_meta']['last_name'],
-				"pseudo" => $pseudo,
-				"pseudoUtilise" => ($pseudo == $i['display_name']), // obsolète
-				"intitule" => $i['display_name'],
-				"nomWiki" => $i['nom_wiki']
-			);
+			$retour[$email] = $this->sousTableau($i, array(
+				"id",
+				"prenom",
+				"nom",
+				"pseudo",
+				"pseudoUtilise", // obsolète
+				"intitule",
+				"nomWiki"
+			));
 		}
 		$this->sendJson($retour);
 	}
@@ -319,5 +317,14 @@ class AnnuaireService extends BaseRestServiceTB {
 
 		$retour = $this->lib->infosParCourriels($unOuPlusieursCourriels);
 		return $retour;
+	}
+
+	/**
+	 * Retourne un sous-tableau de $tableau, où seules les clefs contenues dans
+	 * $listeClefs sont conservées (array_intersect amélioré)
+	 */
+	protected function sousTableau(array $tableau, array $listeClefs) {
+		// @TODO implement !
+		return $tableau;
 	}
 }

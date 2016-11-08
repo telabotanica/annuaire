@@ -100,4 +100,77 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 
 		return $str;
 	}
+
+	// triviale, +1 requête : à redéfinir si les performances sont trop faibles
+	protected function infosUtilisateurParCourriel($courriel) {
+		$id = $this->idParCourriel($courriel);
+		return $this->infosUtilisateurParId($id);
+	}
+
+	// --------------- méthodes de l'interface ---------------------------------
+
+	public function infosParIds($unOuPlusieursIds) {
+		// sécurité : paf! dans l'array
+		if (! is_array($unOuPlusieursIds)) {
+			$unOuPlusieursIds = array($unOuPlusieursIds);
+		}
+
+		$infos = array();
+		foreach ($unOuPlusieursIds as $id) {
+			$infosUtilisateur = null;
+			try {
+				$infosUtilisateur = $this->infosUtilisateurParId($id);
+				// important : formatage standard
+				$infosUtilisateur = $this->formaterInfosUtilisateur($infosUtilisateur);
+				$infosUtilisateur['nom_wiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
+			} catch (Exception $e) {
+				// on échoue silencieusement pour ne pas casser la boucle
+			}
+			$infos[$id] = $infosUtilisateur;
+		}
+		return $infos;
+	}
+
+	public function infosParCourriels($unOuPlusieursCourriels) {
+		// sécurité : paf! dans l'array
+		if (! is_array($unOuPlusieursCourriels)) {
+			$unOuPlusieursCourriels = array($unOuPlusieursCourriels);
+		}
+
+		$infos = array();
+		foreach ($unOuPlusieursCourriels as $courriel) {
+			$infosUtilisateur = null;
+			try {
+				$infosUtilisateur = $this->infosUtilisateurParCourriel($courriel);
+				// important : formatage standard
+				$infosUtilisateur = $this->formaterInfosUtilisateur($infosUtilisateur);
+				$infosUtilisateur['nom_wiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
+			} catch (Exception $e) {
+				// on échoue silencieusement pour ne pas casser la boucle
+			}
+			$infos[$courriel] = $infosUtilisateur;
+		}
+		return $infos;
+	}
+
+	/**
+	 * Méthodes de l'interface ne donnant pas lieu à un traitement générique
+	 */
+	//public abstract function idParCourriel($courriel);
+	//public abstract function getDateDerniereModifProfil($id);
+	//public abstract function identificationCourrielMdp($courriel, $mdp);
+	//public abstract function identificationCourrielMdpHache($courriel, $mdpHache);
+	//public abstract function nbInscrits();
+	//public abstract function inscrireUtilisateur($donneesProfil);
+
+	// --------------- autres méthodes à implémenter ---------------------------
+
+	protected abstract function infosUtilisateurParId($id);
+
+	/**
+	 * Formate les résultats issus de infosUtilisateurParId() ou
+	 * infosUtilisateurParCourriel() afin de renvoyer une liste
+	 * de champs conforme à ce qu'attend le service @TODO valider la stratégie
+	 */
+	protected abstract function formaterInfosUtilisateur(array $infos);
 }

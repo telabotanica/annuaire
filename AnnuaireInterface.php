@@ -6,13 +6,13 @@
  */
 interface AnnuaireInterface {
 
-	//
+	// -------------- méthodes modernes ----------------------------------------
 
 	public function idParCourriel($courriel);
 	public function getDateDerniereModifProfil($id);
 	public function inscrireUtilisateur($donneesProfil);
 
-	// -------------- rétrocompatibilité (11/2016) -------------------
+	// -------------- rétrocompatibilité (11/2016) -----------------------------
 
 	public function identificationCourrielMdpHache($courriel, $mdpHache);
 	public function identificationCourrielMdp($courriel, $mdp);
