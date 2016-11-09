@@ -200,9 +200,9 @@ class AnnuaireService extends BaseRestServiceTB {
 		$retour = array();
 		foreach($infos as $email => $i) {
 			$retour[$email] = array(
-				"id" => $i['ID'],
-				"prenom" => $i['_meta']['first_name'],
-				"nom" => $i['_meta']['last_name'],
+				"id" => $i['id'],
+				"prenom" => $i['prenom'],
+				"nom" => $i['nom']
 			);
 		}
 		$this->sendJson($retour);
@@ -223,16 +223,15 @@ class AnnuaireService extends BaseRestServiceTB {
 		// formatage des résultats
 		$retour = array();
 		foreach($infos as $email => $i) {
-			$pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
-			$retour[$email] = array(
-				"id" => $i['ID'],
-				"prenom" => $i['_meta']['first_name'],
-				"nom" => $i['_meta']['last_name'],
-				"pseudo" => $pseudo,
-				"pseudoUtilise" => ($pseudo == $i['display_name']), // obsolète
-				"intitule" => $i['display_name'],
-				"nomWiki" => $i['nom_wiki']
-			);
+			$retour[$email] = $this->sousTableau($i, array(
+				"id",
+				"prenom",
+				"nom",
+				"pseudo",
+				"pseudoUtilise", // obsolète
+				"intitule",
+				"nomWiki"
+			));
 		}
 		$this->sendJson($retour);
 	}
@@ -285,7 +284,7 @@ class AnnuaireService extends BaseRestServiceTB {
 	protected function identiteCompleteParCourriel() {
 		$infos = $this->infosParCourriels();
 		$format = "json";
-		if (count($this->resources) > 0 && (strtolower($this->ressources[0]) == "xml")) {
+		if (count($this->resources) > 0 && (strtolower($this->resources[0]) == "xml")) {
 			$format = "xml";
 		}
 		// formatage des résultats
@@ -321,10 +320,20 @@ class AnnuaireService extends BaseRestServiceTB {
 
 	/**
 	 * Retourne un sous-tableau de $tableau, où seules les clefs contenues dans
-	 * $listeClefs sont conservées (array_intersect amélioré)
+	 * $listeClefs sont conservées, récursivement (array_intersect amélioré)
 	 */
 	protected function sousTableau(array $tableau, array $listeClefs) {
-		// @TODO implement !
-		return $tableau;
+		$nouveauTableau = array();
+		foreach ($tableau as $k => $v) {
+			if (in_array($k, $listeClefs)) {
+				if (is_array($v) && is_array($listeClefs[$k])) {
+					// descente en profondeur
+					$nouveauTableau[$k] = $this->sousTableau($v, $listeClefs[$k]);
+				} else {
+					$nouveauTableau[$k] = $v;
+				}
+			}
+		}
+		return $nouveauTableau;
 	}
 }

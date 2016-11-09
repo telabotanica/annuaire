@@ -242,9 +242,6 @@ class AnnuaireWP extends AnnuaireAdapter {
 			}
 		}
 
-		// formatage standard
-		$infos = $this->formaterInfosUtilisateur($infos);
-
 		return $infos;
 	}
 
@@ -254,13 +251,18 @@ class AnnuaireWP extends AnnuaireAdapter {
 	 * @param infos Array infos utilisateur produites par infosUtilisateur()
 	 */
 	protected function formaterInfosUtilisateur(array $infos) {
-		var_dump($infos);
-		$retour = array("coucou");
-		
-		// $pseudo = (! empty($i['_meta']['nickname'])) ? $i['_meta']['nickname'] : null;
-		// $sousTableau['pseudoUtilise'] = ($pseudo == $i['display_name']); // obsolète
+		//var_dump($infos);
+		$pseudo = (! empty($infos['_meta']['nickname'])) ? $infos['_meta']['nickname'] : null;
+		$retour = array(
+			"id" => $infos['ID'],
+			"prenom" => $infos['_meta']['first_name'],
+			"nom" => $infos['_meta']['last_name'],
+			"pseudo" => $pseudo,
+			"pseudoUtilise" => ($pseudo == $infos['display_name']), // obsolète
+			"intitule" => $infos['display_name']
+		);
 
-		var_dump($retour);
+		//var_dump($retour);
 		return $retour;
 	}
 }

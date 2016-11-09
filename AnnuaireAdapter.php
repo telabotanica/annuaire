@@ -122,7 +122,7 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 				$infosUtilisateur = $this->infosUtilisateurParId($id);
 				// important : formatage standard
 				$infosUtilisateur = $this->formaterInfosUtilisateur($infosUtilisateur);
-				$infosUtilisateur['nom_wiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
+				$infosUtilisateur['nomWiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
 			} catch (Exception $e) {
 				// on échoue silencieusement pour ne pas casser la boucle
 			}
@@ -144,7 +144,7 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 				$infosUtilisateur = $this->infosUtilisateurParCourriel($courriel);
 				// important : formatage standard
 				$infosUtilisateur = $this->formaterInfosUtilisateur($infosUtilisateur);
-				$infosUtilisateur['nom_wiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
+				$infosUtilisateur['nomWiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
 			} catch (Exception $e) {
 				// on échoue silencieusement pour ne pas casser la boucle
 			}
