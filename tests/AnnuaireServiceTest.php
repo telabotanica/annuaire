@@ -11,24 +11,113 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	/** hosts config */
 	protected $config;
 
-	/** cURL handle */
-	protected $ch;
+	/** client HTTP Guzzle */
+	protected $client;
 
 	public function setUp(){
 		// config
 		$this->config = json_decode(file_get_contents(self::CHEMIN_CONFIG), true);
-		$this->tests = json_decode(file_get_contents(self::CHEMIN_TESTS), true);
-		// libcurl
+		$tests = json_decode(file_get_contents(self::CHEMIN_TESTS), true);
+		$this->tests = $tests['AnnuaireServiceTest'];
+		// client Webservices
+		$this->client = new GuzzleHttp\Client();
 	}
 
 	public function tearDown(){}
 
-	public function testRetrocompat() {
-		var_dump($this->config);
-		var_dump($this->tests);
+	/**
+	 * Appelle un Webservice avec Guzzle et renvoie le résultat
+	 * @param type $url
+	 * @param type $methode
+	 * @param type $verifierCodeHTTP
+	 * @param type $parserJson
+	 * @return type
+	 */
+	protected function appelService($url, $methode='GET', $verifierCodeHTTP=200, $parserJson=true) {
+			$res = $this->client->request($methode, $url);
+			if ($verifierCodeHTTP !== false) {
+				// @WARNING 2-en-1 crado
+				$this->assertEquals($verifierCodeHTTP, $res->getStatusCode());
+			}
+			$data = $res->getBody()->__toString(); // @WTF y a pas mieux que __toString() ?
+			if ($parserJson) {
+				$data = json_decode($data, true);
+			}
+			return $data;
+	}
+
+	/**
+	 * Appelle l'ancien service et le novueau service avec la même URL et
+	 * vérifie que les résultats sont identiques (égalité parfaite)
+	 */
+	protected function comparerRetrocompat($url) {
+		$newRoot = $this->config['root_url'];
+		$oldRoot = $this->config['retrocompat_url'];
+		$newURL = $newRoot . $url;
+		$oldURL = $oldRoot . $url;
+		// compare
+		$oldData = $this->appelService($oldURL);
+		$newData = $this->appelService($newURL);
+		// test
+		$this->assertEquals($oldData, $newData);
+		// @TODO remplacer par assertArraySubset(...)
+	}
+
+	/**
+	 * Vérifier que toutes les valeurs de $keys sont des clefs de $array
+	 * 
+	 * @TODO déplacer dans une classe d'assertion propre
+	 * 
+	 * @param type $keys
+	 * @param type $array
+	 */
+	protected function assertArrayHasKeys($keys, $array) {
+		$ok = true;
+		foreach ($keys as $k) {
+			$ok = $ok && array_key_exists($k, $array);
+		}
+		$this->assertTrue($ok);
+	}
+
+	public function testTestLoginMdp() {
+		// cas de succès
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['TestLoginMdp']['ok']);
+		$this->assertEquals(true, $data);
+	}
+
+	public function testTestLoginMdpErreur() {
+		// cas d'erreur
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['TestLoginMdp']['ko']);
+		$this->assertEquals(false, $data);
+	}
+
+	public function testNbInscrits() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['NbInscrits']);
+		$this->assertInternalType('int', $data);
+	}
+
+	public function testUtilisateurId() {
+		// cas d'erreur
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['id']['ok']);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurIdErreur() {
+		// cas d'erreur
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['id']['ko']);
+		$this->assertEquals(false, $data);
 	}
 
 	public function testAuth() {
 		// @TODO implémenter
 	}
+
+	// ------------ rétrocompatibilité (nécessite les mêmes données) -----------
+
+	/*public function testUtilisateurIdRetrocompat() {
+		// rétrocompat
+		$this->comparerRetrocompat($this->tests['urls']['utilisateur']['id']['ok']);
+	}*/
 }
