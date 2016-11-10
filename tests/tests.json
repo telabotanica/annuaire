@@ -25,9 +25,9 @@
 					"multi": "utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,215,caca,elodie@tela-botanica.org",
 					"xml-multi": "utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,215,caca,elodie@tela-botanica.org/xml"
 				},
-				"infosParIds": {
+				"InfosParIds": {
 					"ok": "utilisateur/infosparids/61",
-					"multi": "utilisateur/infosparids/pouet,61,63"
+					"multi": "utilisateur/infosparids/52,61,63"
 				}
 			},
 			"auth": {

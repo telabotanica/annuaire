@@ -255,6 +255,7 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$pseudo = (! empty($infos['_meta']['nickname'])) ? $infos['_meta']['nickname'] : null;
 		$retour = array(
 			"id" => $infos['ID'],
+			"courriel" => $infos['user_email'],
 			"prenom" => $infos['_meta']['first_name'],
 			"nom" => $infos['_meta']['last_name'],
 			"pseudo" => $pseudo,

@@ -225,6 +225,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		foreach($infos as $email => $i) {
 			$retour[$email] = $this->sousTableau($i, array(
 				"id",
+				"courriel",
 				"prenom",
 				"nom",
 				"pseudo",
@@ -256,6 +257,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		foreach($infos as $email => $i) {
 			$retour[$email] = $this->sousTableau($i, array(
 				"id",
+				"courriel",
 				"prenom",
 				"nom",
 				"pseudo",
@@ -331,7 +333,7 @@ class AnnuaireService extends BaseRestServiceTB {
 				$retour .= '</lettre>';
 				$retour .= '<mail>';
 				if (! empty($info['mail'])) {
-					$retour .= $info['mail'];
+					$retour .= $info['courriel'];
 				}
 				$retour .= '</mail>';
 				$retour .= '<nom>';
@@ -431,6 +433,7 @@ class AnnuaireService extends BaseRestServiceTB {
 			foreach($infos as $email => $i) {
 				$retour[$email] = $this->sousTableau($i, array(
 					"id",
+					"courriel",
 					"prenom",
 					"nom",
 					"pseudo",

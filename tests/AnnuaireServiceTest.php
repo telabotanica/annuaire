@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Teste le Webservice Annuaire
+ * lancer dans le dossier annuaire avec :
+ *  $ phpunit --bootstrap vendor/autoload.php tests/AnnuaireServiceTest.php
+ */
 class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 
 	const CHEMIN_CONFIG = __DIR__ . "/config.json";
@@ -72,6 +77,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	 * @param type $array
 	 */
 	protected function assertArrayHasKeys($keys, $array) {
+		$this->assertNotEmpty($array);
 		$ok = true;
 		foreach ($keys as $k) {
 			$ok = $ok && array_key_exists($k, $array);
@@ -80,13 +86,11 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testTestLoginMdp() {
-		// cas de succès
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['TestLoginMdp']['ok']);
 		$this->assertEquals(true, $data);
 	}
 
 	public function testTestLoginMdpErreur() {
-		// cas d'erreur
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['TestLoginMdp']['ko']);
 		$this->assertEquals(false, $data);
 	}
@@ -97,17 +101,82 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testUtilisateurId() {
-		// cas d'erreur
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['id']['ok']);
 		$this->assertArrayHasKeys(array(
 			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
-	public function testUtilisateurIdErreur() {
+	/*public function testUtilisateurIdErreur() {
 		// cas d'erreur
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['id']['ko']);
 		$this->assertEquals(false, $data);
+	}*/
+
+	public function testUtilisateurIdentiteParCourriel() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-par-courriel']['ok']);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurIdentiteParCourrielMulti() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-par-courriel']['multi']);
+		$this->assertCount(3, $data);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurIdentiteCompleteParCourriel() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-complete-par-courriel']['ok']);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurIdentiteCompleteParCourrielMulti() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-complete-par-courriel']['multi']);
+		$this->assertCount(3, $data);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurIdentiteCompleteParCourrielXml() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-complete-par-courriel']['xml'], 'GET', 200, false);
+		// @TODO faire un meilleur test en parsant le XML
+		$this->assertStringStartsWith('<?xml version="1.0" encoding="UTF-8"?><personne><adresse>', $data);
+	}
+
+	public function testUtilisateurPrenomNomParCourriel() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['prenom-nom-par-courriel']['ok']);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurPrenomNomParCourrielMulti() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['prenom-nom-par-courriel']['multi']);
+		$this->assertCount(2, $data);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurInfosParIds() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['InfosParIds']['ok']);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
+	}
+
+	public function testUtilisateurInfosParIdsMulti() {
+		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['InfosParIds']['multi']);
+		$this->assertCount(3, $data);
+		$this->assertArrayHasKeys(array(
+			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+		), array_shift($data));
 	}
 
 	public function testAuth() {
