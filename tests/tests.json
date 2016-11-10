@@ -1,0 +1,29 @@
+{
+	"AnnuaireServiceTest": {
+		"auth": {
+			"urls": [
+				"..."
+			]
+		},
+		"retrocompat": {
+			"urls": [
+				"TestLoginMdp/elodie@tela-botanica.org/79ea0d389846733a59626c2fd29a2726",
+				"TestLoginMdp/elodie@tela-botanica.org/79ea0d3898bliblablu",
+				"NbInscrits",
+				"utilisateur/21",
+				"utilisateur/pouayte",
+				"utilisateur/21,24",
+				"utilisateur/identite-par-courriel/mathias@tela-botanica.org",
+				"utilisateur/identite-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,215,caca,elodie@tela-botanica.org",
+				"utilisateur/prenom-nom-par-courriel/mathias@tela-botanica.org",
+				"utilisateur/prenom-nom-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,22,caca",
+				"utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org",
+				"utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org/xml",
+				"utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,215,caca,elodie@tela-botanica.org",
+				"utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,215,caca,elodie@tela-botanica.org/xml",
+				"utilisateur/infosparids/61",
+				"utilisateur/infosparids/pouet,61,63"
+			]
+		}
+	}
+}
