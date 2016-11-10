@@ -288,19 +288,159 @@ class AnnuaireService extends BaseRestServiceTB {
 			$format = "xml";
 		}
 		// formatage des résultats
-		$retour = array();
-		foreach($infos as $email => $i) {
-			$retour[$email] = $this->sousTableau($i, array(
-				"id",
-				"prenom",
-				"nom",
-				"pseudo",
-				"pseudoUtilise", // obsolète
-				"intitule",
-				"nomWiki"
-			));
+		if ($format == "xml") {
+			if (count($infos) > 1) {
+				$this->sendError("Le format XML n'est disponible que pour un utilisateur à la fois");
+			}
+			$info = array_shift($infos);
+			// @WARNING rétrocompatibilité dégueulasse
+			// @TODO faire quelque chose de moins artisanal
+			// @NONOBSTANT ce format n'est utilisé que par CoeL (2016-11) et
+			// devrait disparaître
+			$retour = '<?xml version="1.0" encoding="UTF-8"?>';
+			$retour .= '<personne>';
+				$retour .= '<adresse>';
+				if (! empty($info['adresse'])) {
+					$retour .= $info['adresse'];
+				}
+				$retour .= '</adresse>';
+				$retour .= '<adresse_comp>';
+				if (! empty($info['adresse_comp'])) {
+					$retour .= $info['adresse_comp'];
+				}
+				$retour .= '</adresse_comp>';
+				$retour .= '<code_postal>';
+				if (! empty($info['code_postal'])) {
+					$retour .= $info['code_postal'];
+				}
+				$retour .= '</code_postal>';
+				$retour .= '<date_inscription>';
+				if (! empty($info['date_inscription'])) {
+					$retour .= $info['date_inscription'];
+				}
+				$retour .= '</date_inscription>';
+				$retour .= '<id>';
+				if (! empty($info['id'])) {
+					$retour .= $info['id'];
+				}
+				$retour .= '</id>';
+				$retour .= '<lettre>';
+				if (! empty($info['lettre'])) {
+					$retour .= $info['lettre'];
+				}
+				$retour .= '</lettre>';
+				$retour .= '<mail>';
+				if (! empty($info['mail'])) {
+					$retour .= $info['mail'];
+				}
+				$retour .= '</mail>';
+				$retour .= '<nom>';
+				if (! empty($info['nom'])) {
+					$retour .= $info['nom'];
+				}
+				$retour .= '</nom>';
+				$retour .= '<pass>';
+				if (! empty($info['pass'])) {
+					$retour .= $info['pass'];
+				}
+				$retour .= '</pass>';
+				$retour .= '<pays>';
+				if (! empty($info['pays'])) {
+					$retour .= $info['pays'];
+				}
+				$retour .= '</pays>';
+				$retour .= '<prenom>';
+				if (! empty($info['prenom'])) {
+					$retour .= $info['prenom'];
+				}
+				$retour .= '</prenom>';
+				$retour .= '<ville>';
+				if (! empty($info['ville'])) {
+					$retour .= $info['ville'];
+				}
+				$retour .= '</ville>';
+				$retour .= '<fonction>';
+				if (! empty($info['fonction'])) {
+					$retour .= $info['fonction'];
+				}
+				$retour .= '</fonction>';
+				$retour .= '<titre>';
+				if (! empty($info['titre'])) {
+					$retour .= $info['titre'];
+				}
+				$retour .= '</titre>';
+				$retour .= '<site_web>';
+				if (! empty($info['site_web'])) {
+					$retour .= $info['site_web'];
+				}
+				$retour .= '</site_web>';
+				$retour .= '<region>';
+				if (! empty($info['region'])) {
+					$retour .= $info['region'];
+				}
+				$retour .= '</region>';
+				$retour .= '<adresse>';
+				if (! empty($info['adresse'])) {
+					$retour .= $info['adresse'];
+				}
+				$retour .= '</adresse>';
+				$retour .= '<adresse01>';
+				if (! empty($info['adresse01'])) {
+					$retour .= $info['adresse01'];
+				}
+				$retour .= '</adresse01>';
+				$retour .= '<adresse02>';
+				if (! empty($info['adresse02'])) {
+					$retour .= $info['adresse02'];
+				}
+				$retour .= '</adresse02>';
+				$retour .= '<courriel>';
+				if (! empty($info['courriel'])) {
+					$retour .= $info['courriel'];
+				}
+				$retour .= '</courriel>';
+				$retour .= '<mot_de_passe>';
+				if (! empty($info['mot_de_passe'])) {
+					$retour .= $info['mot_de_passe'];
+				}
+				$retour .= '</mot_de_passe>';
+				$retour .= '<pseudo>';
+				if (! empty($info['pseudo'])) {
+					$retour .= $info['pseudo'];
+				}
+				$retour .= '</pseudo>';
+				$retour .= '<pseudoUtilise>';
+				if (! empty($info['pseudoUtilise'])) {
+					$retour .= $info['pseudoUtilise'];
+				}
+				$retour .= '</pseudoUtilise>';
+				$retour .= '<intitule>';
+				if (! empty($info['intitule'])) {
+					$retour .= $info['intitule'];
+				}
+				$retour .= '</intitule>';
+			$retour .= '</personne>';
+			// il n'y a pas de $this->sendXML() dans BaseRestServiceTB (2016-11)
+			http_response_code(200);
+			header('Content-type: text/xml'); // human-readable XML
+			echo $retour;
+			exit;
+		} else {
+			// retour normal en JSON
+			$retour = array();
+			foreach($infos as $email => $i) {
+				$retour[$email] = $this->sousTableau($i, array(
+					"id",
+					"prenom",
+					"nom",
+					"pseudo",
+					"pseudoUtilise", // obsolète
+					"intitule",
+					"nomWiki"
+				));
+			}
+			$this->sendJson($retour);
 		}
-		$this->sendJson($retour);
 	}
 
 	protected function infosParCourriels() {
