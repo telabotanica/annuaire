@@ -41,7 +41,11 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$r = $this->bdd->query($q);
 		$d = $r->fetch();
 
-		return intval($d['ID']);
+		if ($d === false) {
+			return false;
+		} else {
+			return intval($d['ID']);
+		}
 	}
 
 	// @TODO A TESTER
@@ -238,6 +242,10 @@ class AnnuaireWP extends AnnuaireAdapter {
 			if ($r !== false) {
 				$d = $r->fetchAll();
 				foreach ($d as $group) {
+					// retypage des données stringifiées par MySQL
+					$group['is_admin'] = boolval($group['is_admin']);
+					$group['is_mod'] = boolval($group['is_mod']);
+
 					$infos['_groups'][$group['id']] = $group;
 				}
 			}
@@ -248,7 +256,8 @@ class AnnuaireWP extends AnnuaireAdapter {
 
 	/**
 	 * Renvoie les données de l'utilisateur conformément à la liste de champs
-	 * attendue par le service
+	 * attendue par le service @TODO formaliser cette liste quelque part
+	 * 
 	 * @param infos Array infos utilisateur produites par infosUtilisateur()
 	 */
 	protected function formaterInfosUtilisateur(array $infos) {
@@ -263,8 +272,19 @@ class AnnuaireWP extends AnnuaireAdapter {
 			"nom" => $infos['_meta']['last_name'],
 			"pseudo" => $pseudo,
 			"pseudoUtilise" => ($pseudo == $infos['display_name']), // obsolète
-			"intitule" => $infos['display_name']
+			"intitule" => $infos['display_name'],
+			"groupes" => array()
 		);
+		// groupes @TODO valider la formalisation des permissions
+		foreach($infos['_groups'] as $groupe) {
+			$niveau = '';
+			if ($groupe['is_admin']) {
+				$niveau = 'adm';
+			} else if ($groupe['is_mod']) {
+				$niveau = 'mod';
+			}
+			$retour['groupes'][$groupe['id']] = $niveau;
+		}
 
 		//var_dump($retour);
 		return $retour;

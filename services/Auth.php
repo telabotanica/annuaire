@@ -243,7 +243,6 @@ class Auth extends BaseRestServiceTB {
 		}
 		// infos utilisateur
 		$infos = $this->annuaire->infosParCourriels($login);
-		//var_dump($infos); exit;
 		// getIdentiteParCourriel retourne toujours le courriel comme clef de tableau en lowercase
 		$login = strtolower($login);
 		if (count($infos) == 0 || empty($infos[$login])) {

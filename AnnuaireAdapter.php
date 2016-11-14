@@ -133,6 +133,10 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 		return $infos;
 	}
 
+	/**
+	 * Retourne les informations publiques pour un ou plusieurs utilisateurs,
+	 * identifiés par leurs courriels
+	 */
 	public function infosParCourriels($unOuPlusieursCourriels) {
 		// sécurité : paf! dans l'array
 		if (! is_array($unOuPlusieursCourriels)) {

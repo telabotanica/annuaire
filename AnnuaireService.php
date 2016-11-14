@@ -186,6 +186,8 @@ class AnnuaireService extends BaseRestServiceTB {
 	}
 
 	/**
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
 	 * Retourne un jeu mégarestreint d'informations publiques pour une adresse
 	 * courriel donnée :
 	 * - id
@@ -239,6 +241,8 @@ class AnnuaireService extends BaseRestServiceTB {
 
 
 	/**
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
 	 * Retourne un jeu restreint d'informations publiques pour une adresse
 	 * courriel donnée :
 	 * - id
@@ -262,7 +266,8 @@ class AnnuaireService extends BaseRestServiceTB {
 				"pseudo",
 				"pseudoUtilise", // obsolète
 				"intitule",
-				"nomWiki"
+				"nomWiki",
+				"groupes"
 			));
 		}
 		$this->sendJson($retour);
@@ -270,6 +275,8 @@ class AnnuaireService extends BaseRestServiceTB {
 
 
 	/**
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
 	 * Retourne un jeu plus large d'informations publiques pour une adresse
 	 * courriel donnée (intégralité du "profil Tela Botanica") :
 	 * - id
@@ -438,13 +445,18 @@ class AnnuaireService extends BaseRestServiceTB {
 					"pseudo",
 					"pseudoUtilise", // obsolète
 					"intitule",
-					"nomWiki"
+					"nomWiki",
+					"groupes"
 				));
 			}
 			$this->sendJson($retour);
 		}
 	}
 
+	/**
+	 * Méthode interne pour obtenir les infos d'un ou plusieurs utilisateurs
+	 * identifiés par leurs adresses courriel
+	 */
 	protected function infosParCourriels() {
 		if (count($this->resources) < 1) {
 			$this->sendError("élément d'URL manquant");
@@ -468,7 +480,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		$nouveauTableau = array();
 		foreach ($tableau as $k => $v) {
 			if (in_array($k, $listeClefs)) {
-				if (is_array($v) && is_array($listeClefs[$k])) {
+				if (is_array($v) && (isset($listeClefs[$k]) && is_array($listeClefs[$k]))) {
 					// descente en profondeur
 					$nouveauTableau[$k] = $this->sousTableau($v, $listeClefs[$k]);
 				} else {
