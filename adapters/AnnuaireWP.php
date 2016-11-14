@@ -57,8 +57,9 @@ class AnnuaireWP extends AnnuaireAdapter {
 			return false;
 		}
 		$d = $r->fetch();
-		if (! empty($r['last_updated'])) {
-			return $r['last_updated'];
+		if (! empty($d['last_updated'])) {
+			$ddm = strtotime($d['last_updated']);
+			return $ddm;
 		} else {
 			return false;
 		}
@@ -255,7 +256,9 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$pseudo = (! empty($infos['_meta']['nickname'])) ? $infos['_meta']['nickname'] : null;
 		$retour = array(
 			"id" => $infos['ID'],
-			"courriel" => $infos['user_email'],
+			// le courriel ne devrait jamais être exposé sans être déjà connu
+			// (identité-par-courriel) ou si l'on n'est pas admin
+			//"courriel" => $infos['user_email'], // @TODO vérifier que c'est rétrocompatible
 			"prenom" => $infos['_meta']['first_name'],
 			"nom" => $infos['_meta']['last_name'],
 			"pseudo" => $pseudo,

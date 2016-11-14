@@ -104,7 +104,9 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 	// triviale, +1 requête : à redéfinir si les performances sont trop faibles
 	protected function infosUtilisateurParCourriel($courriel) {
 		$id = $this->idParCourriel($courriel);
-		return $this->infosUtilisateurParId($id);
+		$infosParId = $this->infosUtilisateurParId($id);
+
+		return $infosParId;
 	}
 
 	// --------------- méthodes de l'interface ---------------------------------

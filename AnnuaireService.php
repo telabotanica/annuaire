@@ -257,7 +257,6 @@ class AnnuaireService extends BaseRestServiceTB {
 		foreach($infos as $email => $i) {
 			$retour[$email] = $this->sousTableau($i, array(
 				"id",
-				"courriel",
 				"prenom",
 				"nom",
 				"pseudo",

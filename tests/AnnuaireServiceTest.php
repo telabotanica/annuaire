@@ -116,7 +116,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	public function testUtilisateurIdentiteParCourriel() {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-par-courriel']['ok']);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
@@ -124,7 +124,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-par-courriel']['multi']);
 		$this->assertCount(3, $data);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
