@@ -473,8 +473,8 @@ class Auth extends BaseRestServiceTB {
 	 * Crée un jeton JWT signé avec la clef
 	 * 
 	 * @param mixed $sub subject: l'id utilisateur du détenteur du jeton si authentifié, null sinon
-	 * @param string $exp la date d'expiration du jeton, par défaut la date actuelle plus $this->dureeJeton
 	 * @param array $donnees les données à ajouter au jeton (infos utilisateur)
+	 * @param string $exp la date d'expiration du jeton, par défaut la date actuelle plus $this->dureeJeton
 	 * 
 	 * @return string un jeton JWT signé
 	 */
