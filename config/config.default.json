@@ -2,6 +2,9 @@
 {
 	"adapter": "AnnuaireWP",
 	"adapters": {
+		"AnnuaireWPAPI": {
+			"chemin_wp": "/home/stuff/www/wordpress"
+		},
 		"AnnuaireWP": {
 			"bdd": {
 				// Protocole pour PDO
