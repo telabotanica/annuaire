@@ -22,13 +22,13 @@ class AuthPartnerPlantnet extends AuthPartner {
 
 		// var_dump($res); exit;
 		$res = json_decode($res, true);
-		//var_dump($res);
+		//var_dump($res); exit;
 		if (!empty($res['JWT'])) {
 			$this->jetonPartenaire = $res['JWT'];
 			$jetonDecode = $this->auth->decoderJetonManuellement($this->jetonPartenaire);
 			// stockage pour traitement dans les autres méthodes
 			$this->data = $jetonDecode['details'];
-			//var_dump($jeton);
+			//var_dump($this->data); exit;
 			if ( !empty($this->data['email'])) {
 				//var_dump($this->data['email']);
 				return true;

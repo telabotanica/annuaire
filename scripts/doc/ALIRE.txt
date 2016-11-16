@@ -1,7 +1,0 @@
-- Le script tb_annuaire est responsable du lancement et de l'arrêt de tous les scripts 
-liés à celui-ci. Il est à placer dans /etc/init.d ou bien à activer avec le mécanisme disponible au démarrage.
-
-- Le script annuaire_traitement_mail gère le traitement différé des mails modérés.
-
-Si d'autres scripts sont ajoutés à l'annuaire, ils devront être démarrés en ajoutant les lignes 
-correspondantes dans tb_annuaire. 

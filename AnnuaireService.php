@@ -52,7 +52,8 @@ class AnnuaireService extends BaseRestServiceTB {
 				. '[/ressource1[/ressource2[...]]]',
 			'service' => '(utilisateur|testloginmdp|nbinscrits|auth)'
 		);
-		$this->sendJson($utilisation);
+		// 400 pour signifier l'appel d'une URL non gérée
+		$this->sendError($utilisation);
 	}
 
 	protected function get() {
@@ -122,8 +123,9 @@ class AnnuaireService extends BaseRestServiceTB {
 		if (count($this->resources) < 2) {
 			$this->sendError("élément d'URL manquant");
 		}
-		$courriel = $this->resources[0];
-		$mdpHache = $this->resources[1];
+		$courriel = array_shift($this->resources);
+		// astuce si le mot de passe contient un slash
+		$mdpHache = implode('/',$this->resources);
 
 		$retour = $this->lib->identificationCourrielMdpHache($courriel, $mdpHache);
 		$this->sendJson($retour);
@@ -139,6 +141,9 @@ class AnnuaireService extends BaseRestServiceTB {
 			case "identite-par-courriel":
 				$this->identiteParCourriel();
 				break;
+			case "identite-par-nom-wiki": // usage interne
+				$this->identiteParNomWiki();
+				break;
 			case "identite-complete-par-courriel":
 				$this->identiteCompleteParCourriel();
 				break;
@@ -149,52 +154,340 @@ class AnnuaireService extends BaseRestServiceTB {
 				$this->infosParIds();
 				break;
 			default:
-				// réenfilage cracra pour ne pas dé-génériciser infosParIds()
-				array_unshift($this->resources, $ressource);
-				$this->infosParIds();
+				// si on passe un ID numérique directement, ça marche aussi
+				if (is_numeric($ressource)) {
+					// réenfilage cracra pour ne pas dé-génériciser infosParIds()
+					array_unshift($this->resources, $ressource);
+					$this->infosParIds();
+				} else {
+					$this->usage();
+				}
 		}
 	}
 
+	/**
+	 * Retourne des informations publiques pour une liste d'ids numériques
+	 * d'utilisateurs, séparé par des virgules
+	 */
 	protected function infosParIds() {
 		if (count($this->resources) < 1) {
 			$this->sendError("élément d'URL manquant");
 		}
 		$unOuPlusieursIds = $this->resources[0];
+		$unOuPlusieursIds = explode(',', $unOuPlusieursIds);
+		// les ids sont toujours entiers
+		$unOuPlusieursIds = array_map(function($v) {
+			return intval($v);
+		}, $unOuPlusieursIds);
 
 		$retour = $this->lib->infosParids($unOuPlusieursIds);
 		// @TODO formatage des résultats
 		$this->sendJson($retour);
 	}
 
-	protected function identiteParCourriel() {
-		$retour = $this->infosParCourriels();
-		// @TODO formatage des résultats
+	/**
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
+	 * Retourne un jeu mégarestreint d'informations publiques pour une adresse
+	 * courriel donnée :
+	 * - id
+	 * - prenom
+	 * - nom
+	 * @WARNING, ne considère pas le pseudo - obsolète !
+	 */
+	protected function prenomNomParCourriel() {
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$retour[$email] = array(
+				"id" => $i['id'],
+				"prenom" => $i['prenom'],
+				"nom" => $i['nom']
+			);
+		}
 		$this->sendJson($retour);
 	}
 
+	/**
+	 * Retourne les identités pouvant correspondre à un nom wiki donné
+	 * @WARNING usage interne
+	 * - id
+	 * - prenom
+	 * - nom
+	 * - pseudo
+	 * - intitule (nom à afficher)
+	 */
+	protected function identiteParNomWiki() {
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$retour[$email] = $this->sousTableau($i, array(
+				"id",
+				"courriel",
+				"prenom",
+				"nom",
+				"pseudo",
+				"pseudoUtilise", // obsolète
+				"intitule",
+				"nomWiki"
+			));
+		}
+		$this->sendJson($retour);
+	}
+
+
+	/**
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
+	 * Retourne un jeu restreint d'informations publiques pour une adresse
+	 * courriel donnée :
+	 * - id
+	 * - prenom
+	 * - nom
+	 * - pseudo
+	 * - pseudoUtilise
+	 * - intitule (nom à afficher)
+	 * - nomWiki
+	 */
+	protected function identiteParCourriel() {
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		// formatage des résultats
+		$retour = array();
+		foreach($infos as $email => $i) {
+			$retour[$email] = $this->sousTableau($i, array(
+				"id",
+				"prenom",
+				"nom",
+				"pseudo",
+				"pseudoUtilise", // obsolète
+				"intitule",
+				"nomWiki",
+				"groupes"
+			));
+		}
+		$this->sendJson($retour);
+	}
+
+
+	/**
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
+	 * Retourne un jeu plus large d'informations publiques pour une adresse
+	 * courriel donnée (intégralité du "profil Tela Botanica") :
+	 * - id
+	 * - prenom
+	 * - nom
+	 * - pseudo
+	 * - pseudoUtilise
+	 * - intitule (nom à afficher)
+	 * - nomWiki
+	 * - ...
+	 * - ...
+	 */
 	protected function identiteCompleteParCourriel() {
-		$retour = $this->infosParCourriels();
+		$infos = $this->infosParCourriels();
 		$format = "json";
-		if (count($this->resources) > 0 && (strtolower($this->ressources[0]) == "xml")) {
+		if (count($this->resources) > 0 && (strtolower($this->resources[0]) == "xml")) {
 			$format = "xml";
 		}
-		// @TODO formatage des résultats
-		$this->sendJson($retour);
+		// formatage des résultats
+		if ($format == "xml") {
+			if (count($infos) > 1) {
+				$this->sendError("Le format XML n'est disponible que pour un utilisateur à la fois");
+			}
+			$info = array_shift($infos);
+			// @WARNING rétrocompatibilité dégueulasse
+			// @TODO faire quelque chose de moins artisanal
+			// @NONOBSTANT ce format n'est utilisé que par CoeL (2016-11) et
+			// devrait disparaître
+			$retour = '<?xml version="1.0" encoding="UTF-8"?>';
+			$retour .= '<personne>';
+				$retour .= '<adresse>';
+				if (! empty($info['adresse'])) {
+					$retour .= $info['adresse'];
+				}
+				$retour .= '</adresse>';
+				$retour .= '<adresse_comp>';
+				if (! empty($info['adresse_comp'])) {
+					$retour .= $info['adresse_comp'];
+				}
+				$retour .= '</adresse_comp>';
+				$retour .= '<code_postal>';
+				if (! empty($info['code_postal'])) {
+					$retour .= $info['code_postal'];
+				}
+				$retour .= '</code_postal>';
+				$retour .= '<date_inscription>';
+				if (! empty($info['date_inscription'])) {
+					$retour .= $info['date_inscription'];
+				}
+				$retour .= '</date_inscription>';
+				$retour .= '<id>';
+				if (! empty($info['id'])) {
+					$retour .= $info['id'];
+				}
+				$retour .= '</id>';
+				$retour .= '<lettre>';
+				if (! empty($info['lettre'])) {
+					$retour .= $info['lettre'];
+				}
+				$retour .= '</lettre>';
+				$retour .= '<mail>';
+				if (! empty($info['mail'])) {
+					$retour .= $info['courriel'];
+				}
+				$retour .= '</mail>';
+				$retour .= '<nom>';
+				if (! empty($info['nom'])) {
+					$retour .= $info['nom'];
+				}
+				$retour .= '</nom>';
+				$retour .= '<pass>';
+				if (! empty($info['pass'])) {
+					$retour .= $info['pass'];
+				}
+				$retour .= '</pass>';
+				$retour .= '<pays>';
+				if (! empty($info['pays'])) {
+					$retour .= $info['pays'];
+				}
+				$retour .= '</pays>';
+				$retour .= '<prenom>';
+				if (! empty($info['prenom'])) {
+					$retour .= $info['prenom'];
+				}
+				$retour .= '</prenom>';
+				$retour .= '<ville>';
+				if (! empty($info['ville'])) {
+					$retour .= $info['ville'];
+				}
+				$retour .= '</ville>';
+				$retour .= '<fonction>';
+				if (! empty($info['fonction'])) {
+					$retour .= $info['fonction'];
+				}
+				$retour .= '</fonction>';
+				$retour .= '<titre>';
+				if (! empty($info['titre'])) {
+					$retour .= $info['titre'];
+				}
+				$retour .= '</titre>';
+				$retour .= '<site_web>';
+				if (! empty($info['site_web'])) {
+					$retour .= $info['site_web'];
+				}
+				$retour .= '</site_web>';
+				$retour .= '<region>';
+				if (! empty($info['region'])) {
+					$retour .= $info['region'];
+				}
+				$retour .= '</region>';
+				$retour .= '<adresse>';
+				if (! empty($info['adresse'])) {
+					$retour .= $info['adresse'];
+				}
+				$retour .= '</adresse>';
+				$retour .= '<adresse01>';
+				if (! empty($info['adresse01'])) {
+					$retour .= $info['adresse01'];
+				}
+				$retour .= '</adresse01>';
+				$retour .= '<adresse02>';
+				if (! empty($info['adresse02'])) {
+					$retour .= $info['adresse02'];
+				}
+				$retour .= '</adresse02>';
+				$retour .= '<courriel>';
+				if (! empty($info['courriel'])) {
+					$retour .= $info['courriel'];
+				}
+				$retour .= '</courriel>';
+				$retour .= '<mot_de_passe>';
+				if (! empty($info['mot_de_passe'])) {
+					$retour .= $info['mot_de_passe'];
+				}
+				$retour .= '</mot_de_passe>';
+				$retour .= '<pseudo>';
+				if (! empty($info['pseudo'])) {
+					$retour .= $info['pseudo'];
+				}
+				$retour .= '</pseudo>';
+				$retour .= '<pseudoUtilise>';
+				if (! empty($info['pseudoUtilise'])) {
+					$retour .= $info['pseudoUtilise'];
+				}
+				$retour .= '</pseudoUtilise>';
+				$retour .= '<intitule>';
+				if (! empty($info['intitule'])) {
+					$retour .= $info['intitule'];
+				}
+				$retour .= '</intitule>';
+			$retour .= '</personne>';
+			// il n'y a pas de $this->sendXML() dans BaseRestServiceTB (2016-11)
+			http_response_code(200);
+			header('Content-type: text/xml'); // human-readable XML
+			echo $retour;
+			exit;
+		} else {
+			// retour normal en JSON
+			$retour = array();
+			foreach($infos as $email => $i) {
+				$retour[$email] = $this->sousTableau($i, array(
+					"id",
+					"courriel",
+					"prenom",
+					"nom",
+					"pseudo",
+					"pseudoUtilise", // obsolète
+					"intitule",
+					"nomWiki",
+					"groupes"
+				));
+			}
+			$this->sendJson($retour);
+		}
 	}
 
-	protected function prenomNomParCourriel() {
-		$retour = $this->infosParCourriels();
-		// @TODO formatage des résultats
-		$this->sendJson($retour);
-	}
-
+	/**
+	 * Méthode interne pour obtenir les infos d'un ou plusieurs utilisateurs
+	 * identifiés par leurs adresses courriel
+	 */
 	protected function infosParCourriels() {
 		if (count($this->resources) < 1) {
 			$this->sendError("élément d'URL manquant");
 		}
 		$unOuPlusieursCourriels = array_shift($this->resources);
+		$unOuPlusieursCourriels = explode(',', $unOuPlusieursCourriels);
+		// les courriels doivent contenir un arrobase @TODO utile ?
+		$unOuPlusieursCourriels = array_filter($unOuPlusieursCourriels, function($v) {
+			return (strpos($v, '@') !== false);
+		});
 
 		$retour = $this->lib->infosParCourriels($unOuPlusieursCourriels);
 		return $retour;
+	}
+
+	/**
+	 * Retourne un sous-tableau de $tableau, où seules les clefs contenues dans
+	 * $listeClefs sont conservées, récursivement (array_intersect amélioré)
+	 */
+	protected function sousTableau(array $tableau, array $listeClefs) {
+		$nouveauTableau = array();
+		foreach ($tableau as $k => $v) {
+			if (in_array($k, $listeClefs)) {
+				if (is_array($v) && (isset($listeClefs[$k]) && is_array($listeClefs[$k]))) {
+					// descente en profondeur
+					$nouveauTableau[$k] = $this->sousTableau($v, $listeClefs[$k]);
+				} else {
+					$nouveauTableau[$k] = $v;
+				}
+			}
+		}
+		return $nouveauTableau;
 	}
 }

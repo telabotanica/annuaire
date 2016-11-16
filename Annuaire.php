@@ -2,6 +2,12 @@
 
 require_once 'AnnuaireInterface.php';
 
+/**
+ * Impémente l'interface AnnuaireInterface en mettant en jeu un design-pattern
+ * "adapter" qui permet de changer d'implémentation par un simple paramètre
+ * dans la config
+ * https://fr.wikipedia.org/wiki/Adaptateur_(patron_de_conception)
+ */
 class Annuaire implements AnnuaireInterface {
 
 	/** Config en JSON */
