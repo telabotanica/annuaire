@@ -1,12 +1,19 @@
 <?php
 
 // composer
-require_once '../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /** Chemin du fichier de clef - à synchroniser avec le service Auth ! */
 const CHEMIN_CLEF_AUTH = "../config/clef-auth.ini";
 
 $actions = array("forger_jeton_admin");
+
+// Sécurité à deux ronds :
+// interdit d'exécuter ce fichier autrement qu'en ligne de commande
+if (php_sapi_name() !== 'cli') {
+	echo "Exécution autorisée en ligne de commande seulement.\n";
+	exit;
+}
 
 function usage() {
 	global $argv;
