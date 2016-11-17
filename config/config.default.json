@@ -1,9 +1,10 @@
 // pseudo-JSON : les lignes commençant par // sont ignorées
 {
-	"adapter": "AnnuaireWP",
+	"adapter": "AnnuaireWPAPI",
 	"adapters": {
 		"AnnuaireWPAPI": {
-			"chemin_wp": "/home/stuff/www/wordpress"
+			"chemin_wp": "/home/stuff/www/wordpress",
+			"prefixe_tables": "wp_"
 		},
 		"AnnuaireWP": {
 			"bdd": {
@@ -16,30 +17,11 @@
 				"prefixe": "wp_",
 				"login": "",
 				"mdp": ""
-			},
-			// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
-			"mdp_magique_hache": ""
+			}
 		}
 	},
 	"auth": {
 		// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
 		"mdp_magique_hache": "274a7dcc0c54ce23b1b81e0f585ddcef"
 	}
-	//,
-	//"newsletter": {
-		// Adresse de base des web services vpopmail
-	//	"adresse_service_lettre": "https://vpopmail.tela-botanica.org/",
-		// Service d'inscription
-	//	"service_inscription_lettre": "ajout_abonne.php",
-		// Service de desinscription
-	//	"service_desinscription_lettre": "suppression_abonne.php",
-		// Domaine de la lettre d'actualité
-	//	"domaine_lettre": "tela-botanica.org",
-		// Nom de la lettre d'actualité
-	//	"nom_lettre": "actu",
-		// Adresse d'inscription à la lettre d'actualité : actu-subscribe[a]tela-botanica[point]org
-	//	"adresse_inscription_lettre": "",
-		// Addresse de désinscription à la lettre d'actu : actu-unsubscribe[a]tela-botanica[point]org
-	//	"adresse_desinscription_lettre": ""
-	//}
 }

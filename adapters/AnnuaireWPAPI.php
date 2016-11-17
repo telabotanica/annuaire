@@ -4,40 +4,31 @@ require_once __DIR__ . '/../AnnuaireAdapter.php';
 
 /**
  * Implémentation de référence de l'Annuaire sur la base de données Wordpress,
- * en utilisant l'API Wordpress, ce qui permet de déclencher les hooks lors de
- * l'inscription d'un utilisateur, par exemple.
- * 
- * @WARNING devrait être sensiblement plus lent, à comparer avec AnnuaireWP pour
- * trouver le meilleur rapport qualité/prix
+ * en utilisant l'API Wordpress, ce qui permet de :
+ * - déclencher les hooks lors de l'inscription d'un utilisateur
+ * - éviter de dupliquer la config de la base de données
+ * - être moins dépendant de la stratégie de stockage WP/BP
  */
 class AnnuaireWPAPI extends AnnuaireAdapter {
 
 	/** Préfixe des tables Wordpress */
 	protected $prefixe;
 
-	/** Handler PDO */
-	protected $bdd;
-
 	public function __construct($config) {
 		parent::__construct($config);
 
-		// connexion BDD
-		$cheminWordpress = $this->config['adapters']['AnnuaireWPAPI']['chemin_wp'];
+		// préfixe de tables pour les requêtes "en dur" @TODO essayer de s'en débarrasser
+		$this->prefixe = $this->config['adapters']['AnnuaireWPAPI']['prefixe_tables'];
 		// inclusion de l'API
+		$cheminWordpress = $this->config['adapters']['AnnuaireWPAPI']['chemin_wp'];
 		require_once $cheminWordpress . "/wp-load.php";
-
-		// connexion BDD @TODO essayer de s'en débarrasser
-		$configBdd = $this->config['adapters']['AnnuaireWP']['bdd'];
-		$dsn = $configBdd['protocole'] . ':host=' . $configBdd['hote'] . ';dbname=' . $configBdd['base'] . ";charset=utf8";
-		$this->bdd = new PDO($dsn, $configBdd['login'], $configBdd['mdp']);
-		$this->bdd->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-		// préfixe
-		$this->prefixe = $configBdd['prefixe'];
 	}
 
 	// ------------- implémentation de la classe abstraite ---------------------
 
+	/**
+	 * Retourne l'id utilisateur WP en fonction du champ "email" du profil
+	 */
 	public function idParCourriel($courriel) {
 		$user = get_user_by('email', $courriel);
 
@@ -48,99 +39,68 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		}
 	}
 
-	// @TODO A TESTER
+	/**
+	 * Retourne la date de dernièr emodification du profil, en se basant sur le
+	 * champ last_updated du profil étendu BP, qui est mise à jour même si ce
+	 * sont des champs de profil WP qu ont été modifiés
+	 * @TODO vérifier si c'est fiable
+	 * @TODO vérifier si ça marche même lorsqu'aucun champ de profil étendu BP
+	 *		n'est défini (y a des chances que non - mais on ne devrait pas se
+	 *		trouver dans ce cas)
+	 */
 	public function getDateDerniereModifProfil($id) {
-		// protection
-		$idP = $this->bdd->quote($id);
-		// requête !! nécessite BP
-		$q = "SELECT last_updated FROM {$this->prefixe}bp_xprofile_data "
-			. "WHERE user_id = $idP"
-		;
-		$r = $this->bdd->query($q);
-		if ($r === false) {
-			return false;
-		}
-		$d = $r->fetch();
-		if (! empty($d['last_updated'])) {
-			$ddm = strtotime($d['last_updated']);
+		global $wpdb;
+		$ddm = $wpdb->get_var("SELECT MAX(last_updated) as date FROM {$this->prefixe}bp_xprofile_data WHERE user_id = $id");
+
+		if ($ddm === false) {
+			return 0; // @TODO 0 pour rester compatible ou false pour indiquer que /i ?
+		} else {
+			$ddm = strtotime($ddm);
 			return $ddm;
-		} else {
-			return false;
 		}
 	}
 
-	// OK
+	/**
+	 * Retourne true si l'utilisateur ayant l'adresse courriel $courriel a un
+	 * mot de passe égal à $mdp, false sinon
+	 * Compatible avec les mots de passe hachés en MD5 (ancienne méthode) ou
+	 * aec PHPass (nouvelle méthode); met à jour le haché si besoin :
+	 * https://developer.wordpress.org/reference/functions/wp_check_password/
+	 */
 	public function identificationCourrielMdp($courriel, $mdp) {
-		// - pourquoi "8" et "false" ?
-		// - on s'en fout, c'est écrit ça dans la doc et ça marche
-		$passwordHasher = new Hautelook\Phpass\PasswordHash(8, false);
-
-		// protection
-		$courrielP = $this->bdd->quote($courriel);
-		// requête
-		$q = "SELECT user_pass FROM {$this->prefixe}users "
-			. "WHERE user_email = $courrielP "
-			. "AND user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
-		;
-		$r = $this->bdd->query($q);
-		if ($r === false) {
-			return false;
-		}
-		$d = $r->fetch();
-		if (empty($d['user_pass'])) {
-			return false;
+		$user = get_user_by('email', $courriel);
+		if ($user) {
+			// met à jour le hash si besoin
+			return wp_check_password($mdp, $user->data->user_pass, $user->ID);
 		} else {
-			$mdpHache = $d['user_pass'];
-			$passwordMatch = $passwordHasher->CheckPassword($mdp, $mdpHache);
-			// rétrocompatibilité MD5 @TODO mettre à jour toute la base
-			// d'utilisateurs et virer ça un jour
-			$correspondanceMD5 = (md5($mdp) == $mdpHache);
-
-			return ($passwordMatch || $correspondanceMD5);
+			return false;
 		}
 	}
 
-	// OK
+	/**
+	 * Retourne true si l'utilisateur ayant l'adresse courriel $courriel a un
+	 * mot de passe haché (dans la BDD WP) égal à $mdpHaché, false sinon
+	 */
 	public function identificationCourrielMdpHache($courriel, $mdpHache) {
-		// un compte activé non-spam a un "user_status" != 1 dans "users" (non
-		// spam) et n'a pas de clef "activation_key" dans "usermeta"
-
-		// protection
-		$courrielP = $this->bdd->quote($courriel);
-		$mdpHacheP = $this->bdd->quote($mdpHache);
-		// requête
-		$q = "SELECT ID FROM {$this->prefixe}users "
-			. "WHERE user_email = $courrielP "
-			. "AND user_pass = $mdpHacheP "
-			. "AND user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
-		;
-		$r = $this->bdd->query($q);
-		if ($r === false) {
-			return false;
+		$utilisateur = get_user_by('email', $courriel);
+		if ($utilisateur) {
+			return ($utilisateur->data->user_pass == $mdpHache);
 		} else {
-			$d = $r->fetch();
-			return (! empty($d['ID']));
+			return false;
 		}
 	}
 
-	// OK
+	/**
+	 * Retourne le nombre d'utilisateurs actifs ayant au moins un rôle
+	 * Attention, compte aussi les utilisateurs déclarés comme "SPAM"
+	 */
 	public function nbInscrits() {
-		// un compte activé non-spam a un "user_status" != 1 dans "users" (non
-		// spam) et n'a pas de clef "activation_key" dans "usermeta"
-
-		$q = "SELECT count(*) as nb FROM {$this->prefixe}users "
-			. "WHERE user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
-		;
-		$r = $this->bdd->query($q);
-		$d = $r->fetch();
-
-		return intval($d['nb']);
+		$utilisateurs = count_users();
+		return intval($utilisateurs['total_users']);
 	}
 
 	public function inscrireUtilisateur($donneesProfil) {
+		var_dump($donneesProfil);
 		throw new Exception("inscrireUtilisateur: pas encore implémenté");
 		// Attention aux hooks
 		// https://fr.wordpress.org/plugins/json-api-user/
@@ -154,6 +114,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 * Retourne tout ce qu'il y a à savoir sur l'utilisateur, organisé selon les
 	 * tables Wordpress / Buddypress :
 	 * - champs de la table WP_users (toujours)
+	 * - "_roles": liste des rôles (toujours)
 	 * - "_meta": métadonnées de la table WP_usermeta (si $usermeta=true)
 	 * - "_xprofile": profil étendu des tables WP_bp_xprofile* (si $xprofile=true)
 	 * - "_groups": infos de groupes de la table WP_bp_groups_members (si $groups=true)
@@ -195,21 +156,17 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		// @TODO obtenir ça avec l'API BP mais c'est une telle bousasse atomique
 		// qu'il n'y a pas une p*tain de fonction qui fasse ça clairement :(
 		if ($xprofile) {
+			global $wpdb;
 			$infos['_xprofile'] = array();
 			// 3) profil étendu
-			//$xprofile = "prout";
-			//echo "<pre>"; var_dump($xprofile); echo "</pre>"; exit;
-
-			$q = "SELECT xd.user_id, xf.name, xd.value "
+			$xprofile = $wpdb->get_results("SELECT xd.user_id, xf.name, xd.value "
 				. "FROM {$this->prefixe}bp_xprofile_fields xf "
 				. "LEFT JOIN {$this->prefixe}bp_xprofile_data xd ON xd.field_id = xf.id "
 				. "WHERE xd.user_id = $id"
-			;
-			$r = $this->bdd->query($q);
-			if ($r !== false) {
-				$d = $r->fetchAll();
-				foreach ($d as $xprofile) {
-					$infos['_xprofile'][$xprofile['name']] = $xprofile['value'];
+			);
+			if ($xprofile !== false) {
+				foreach ($xprofile as $champ) {
+					$infos['_xprofile'][$champ->name] = $champ->value;
 				}
 			}
 		}
@@ -264,6 +221,8 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			"intitule" => $infos['display_name'],
 			"groupes" => array()
 		);
+		// rôles @TODO valider la formalisation des permissions
+		$retour['permissions'] = $infos['_roles'];
 		// groupes @TODO valider la formalisation des permissions
 		foreach($infos['_groups'] as $groupe) {
 			$niveau = '';
@@ -275,7 +234,6 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			$retour['groupes'][$groupe['id']] = $niveau;
 		}
 
-		//var_dump($retour);
 		return $retour;
 	}
 }

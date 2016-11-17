@@ -267,7 +267,8 @@ class AnnuaireService extends BaseRestServiceTB {
 				"pseudoUtilise", // obsolète
 				"intitule",
 				"nomWiki",
-				"groupes"
+				"groupes",
+				"permissions"
 			));
 		}
 		$this->sendJson($retour);
@@ -446,6 +447,7 @@ class AnnuaireService extends BaseRestServiceTB {
 					"pseudoUtilise", // obsolète
 					"intitule",
 					"nomWiki",
+					"permissions",
 					"groupes"
 				));
 			}
