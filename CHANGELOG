@@ -1,0 +1,59 @@
+2016-11-17 : v2.0-Bouvier
+ * Passage à Git
+ * Implémentation de l'annuaire sur Wordpress / BuddyPress
+ * Ajout de la synchronisation de comptes partenaires (modification si déjà existant)
+ * Abandon de toutes les interfaces graphiques (maintenant géré par Wordpress)
+ * Abandon du framework TB au profit des paquets Composer TB
+ * Implémentation du service avec un patron de conception Adaptateur pour remplacer
+   facilement la couche de stockage au besoin
+ * Implémentation du système de rôles centralisé pour le SSO, basé sur les rôles WP
+ * Implémentation du système de groupes, basé sur les groupes BP
+ * Ajout d'un script pour forger des jetons admin longue durée
+ * Ajout de tests unitaires
+
+2016-03-01 : v1.5-Bélier
+ * Première version de l'authentification SSO par un partenaire - implémenté basiquement pour Pl@ntNet
+ * Division de la Yougoslavie en Serbie et Monténégro (12 ans après...)
+ * Caractérisation (mal faite !) de Chypre, qui était incluse dans la Grèce (0 pointé en géographie)
+ * Service Auth : acceptation du nom d'utilisateur en plus du courriel, pour Pl@ntNet
+ * Bricolage cracra d'AnnuaireModele pour faciliter les inscriptions lors d'une connexion à un partenaire (@TODO faire mieux un jour)
+ * La casse des adresses courriel est maintenant ignorée
+ * Auth => redirection  : ajout du parametre Authorization même si le jeton est null; suppression du header qui ne sert à rien (reçu par le navigateur mais pas renvoyé à l'URL de redirection !)
+ * Implémentation d'un mot de passe universel pour le SSO
+ * Dépatchage du patch passoire : le patch CGI permettait à tout le monde de se logger avec n'importe quel mdp :)
+ * Amélioration gestion du nom wiki
+ * Patch : si PHP fonctionne en CGI, pas moyen (en tout cas pas facile - testé une combine mais elle marche pas) d'utiliser HTTP Basic Auth (la merde !); on détecte donc si on est en CGI et dans ce cas on désactive l'authentification - open bar !
+ * Mode synchrone avec redirection si une url de redirection est précisée pour le sso
+ * Utilisateur : suppression méthode temporaire getIdentiteConnectee()
+ * Auth : connexion() retourne maintenant le nom Wiki
+ * Utilisateur : formaterNomWiki() tient compte du pseudo
+ * Auth : verifierjeton prend maintenant en compte le header Authorization + correction doc
+ * Auth : une tentative de connexion infructueuse détruit le cookie, pour plus de cohérence
+ 
+
+2015-05-26 : v1.4-Baleine - ATTENTION, nécessite PHP >= 5.3
+ * Service Auth : première version du SSO à base de jetons JWT
+ * Ajout lib firebase/php-jwt
+ * Ajout composer.json et autoloader pour firebase/php-jwt
+ * Ajout de l'identifiant et de la durée du jeton dans la réponse JSON
+ * .htaccess : ajout d'une directive pour utiliser PHP 55 en CGI sur Sequoia (pas très générique !)
+ * Auth : ajout de "secure" au cookie
+ * Service auth::identité : lecture du jeton dans le header "Authorization", après le cookie et avant le paramètre
+ * Protection contres indices de tableau inexistants
+ * Amélioration des sorties du programme
+ * Affichage du log sur plusieurs lignes pour le retour du script
+ * Script de traitement des emails : essai d'élargissement du wait_timeout pour éviter les erreurs "MySQL has gone away"
+ * Ajout d'une vérification d'unicité du mail lors de la validation d'inscription
+ * Ajout d'un nom d'utilisateur en haut de page dans l'onglet "dons"
+ * Changement de logos et favicons : liens vers resources.tela-botanica.org
+ * Ajout du service getIdentiteCompleteParCourriel() et de la possibilité de renvoyer du XML, pour rétrocompatibilité avec le service coel:CoelUtilisateur qui utilisait eflore_chatin
+ * Ajout d'une méthode d'authentification HTTP Basic
+ * Changement signature David vers signature Daniel
+ * Modification de getInfosParId(s) pour traiter plusieurs ids à la fois
+ * Correction cartes Afrique, Reçu de dons, cartoPoint dans le profil utilisateur
+ * Ajout de fonctions de pseudo sso en attendant le vrai
+
+2014-09-29 : v1.3-Balance : utilisation de scripts différés pour gérer les grandes quantités de mail
+2014-02-18 : v1.2-Autel : intégration de l'ensemble des modifications depuis le 2010-08-12
+2010-08-12 : v1.1-Andromede : corrections 
+2010-08-03 : v1.0-Aigle : version initiale 
