@@ -1,0 +1,27 @@
+// pseudo-JSON : les lignes commençant par // sont ignorées
+{
+	"adapter": "AnnuaireWPAPI",
+	"adapters": {
+		"AnnuaireWPAPI": {
+			"chemin_wp": "/home/stuff/www/wordpress",
+			"prefixe_tables": "wp_"
+		},
+		"AnnuaireWP": {
+			"bdd": {
+				// Protocole pour PDO
+				"protocole": "mysql",
+				"hote": "localhost",
+				"port": 3306,
+				// Nom de la base de données
+				"base": "wordpress",
+				"prefixe": "wp_",
+				"login": "",
+				"mdp": ""
+			}
+		}
+	},
+	"auth": {
+		// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
+		"mdp_magique_hache": ""
+	}
+}
