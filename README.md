@@ -13,7 +13,7 @@ cp clef-auth.defaut.ini clef-auth.ini
 ```
 ### service.json
  - **domain_root** : racine du domaine, sans le protocole (ex: "beta.tela-botanica.org")
- - **base_uri** : URI de base du service (ex: "/service:annuaire"), dépend des redirections (voir ci-dessous)
+ - **base_uri** : URI de base du service (ex: "/service:annuaire"), dépend des redirections choisies
  - **first_resource_separator** : permier caractère attendu après base_uri (ex: "/" ou ":")
  - **auth** : voir la documentation dans le fichier
 
@@ -31,4 +31,7 @@ Saisir une suite d'au moins 16 caractères dans ce fichier.
 Cette clef sert à signer les jetons du service d'authentification.
 En cas de problème de sécurité (fuite de jeton admin par ex.), modifier ce fichier invalidera tous les jetons existants.
 
-## redirections
+## gestion des rôles SSO
+Les services **utilisateur** et **auth** renvoient la liste des rôles affectés à l'utilisateur.
+Pour cumuler plusieurs rôles (nécessaire pour gérer les permissions SSO), nécessite le plugin Wordpress "Multiple Roles" : https://fr.wordpress.org/plugins/multiple-roles/
+Charge à l'administrateur WP d'ajouter des rôles.
