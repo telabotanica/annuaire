@@ -2,7 +2,7 @@
 	"AnnuaireServiceTest": {
 		"urls": {
 			"TestLoginMdp": {
-				"ok": "TestLoginMdp/elodie@tela-botanica.org/79ea0d389846733a59626c2fd29a2726",
+				"ok": "TestLoginMdp/elodie@tela-botanica.org/$P$BQkdVG6tElhzi04C9do/drj2jDELoU.",
 				"ko": "TestLoginMdp/elodie@tela-botanica.org/79ea0d3898bliblablu"
 			},
 			"NbInscrits": "NbInscrits",
@@ -26,8 +26,8 @@
 					"xml-multi": "utilisateur/identite-complete-par-courriel/mathias@tela-botanica.org,amandine@tela-botanica.org,215,caca,elodie@tela-botanica.org/xml"
 				},
 				"InfosParIds": {
-					"ok": "utilisateur/infosparids/61",
-					"multi": "utilisateur/infosparids/52,61,63"
+					"ok": "utilisateur/infosparids/21",
+					"multi": "utilisateur/infosparids/52,21,63"
 				}
 			},
 			"auth": {

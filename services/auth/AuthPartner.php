@@ -109,7 +109,7 @@ abstract class AuthPartner {
 	 * - prenom
 	 * - pseudo
 	 * - email
-	 * Pour les autres champs possibles, voir AnnuaireModele::inscrireUtilisateurCommeUnGrosPorc()
+	 * Pour les autres champs possibles, voir AnnuaireModele::inscrireUtilisateur
 	 */
 	protected abstract function getValeursProfilPartenaire();
 
@@ -122,7 +122,11 @@ abstract class AuthPartner {
 	}
 
 	protected function mettreAJourProfil() {
-		throw new Exception("La mise à jour du profil n'est pas encore prise en charge");
 		$valeursProfil = $this->getValeursProfilPartenaire();
+		// mise à jour du compte partenaire dans l'annuaire
+		if (empty($this->idLocal)) {
+			throw new Exception("Tentative de mise à jour avec un id local vide");
+		}
+		$this->annuaire->inscrireUtilisateur($valeursProfil, $this->idLocal);
 	}
 }

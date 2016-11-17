@@ -99,11 +99,55 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		return intval($utilisateurs['total_users']);
 	}
 
-	public function inscrireUtilisateur($donneesProfil) {
-		var_dump($donneesProfil);
-		throw new Exception("inscrireUtilisateur: pas encore implémenté");
-		// Attention aux hooks
-		// https://fr.wordpress.org/plugins/json-api-user/
+	/**
+	 * Inscrit un utilisateur dans l'annuaire WP - utilisé par le service Auth
+	 * pour synchroniser les comptes partenaires, notamment
+	 * 
+	 * $donneesProfil doit toujours contenir au moins :
+	 *  - nom
+	 *  - prenom
+	 *  - pseudo
+	 *  - email
+	 *  - mdp (null pour un partenaire)
+	 * 
+	 * Pour un compte partenaire, il doit contenir également
+	 *  - partenaire : code du partenaire (ex: "plantnet", "recolnat")
+	 *  - id_partenaire : identifiant de l'utilisateur dans le SI partenaire
+	 * 
+	 * Si $id est fourni, l'utilisateur portant cet id sera mis à jour
+	 */
+	public function inscrireUtilisateur($donneesProfil, $id=null) {
+
+		$donnees = array(
+			'user_login' =>  $donneesProfil['pseudo'],
+			'user_nicename' =>  $donneesProfil['pseudo'],
+			'first_name' =>  $donneesProfil['prenom'],
+			'last_name' =>  $donneesProfil['nom'],
+			'user_email' =>  $donneesProfil['email'],
+			'user_registered' =>  date('Y-m-d H:i:s'),
+			'user_pass'  =>  isset($donneesProfil['mdp']) ? $donneesProfil['mdp'] : null
+		);
+		// pour une mise à jour :
+		if ($id !== null) {
+			$donnees['ID'] = $id;
+		}
+		// insertion, avec déclenchement des hooks !
+		// l'id est toujours retourné, qu'il soit nouveau ou = au $id précédent
+		$id = wp_insert_user($donnees);
+
+		if (is_wp_error($id)) {
+			throw new Exception("Impossible de mettre à jour le compte utilisateur");
+		}
+
+		// métadonnées partenaire
+		if (!empty($donneesProfil['partenaire'])) {
+			update_user_meta($id, 'partenaire', $donneesProfil['partenaire']);
+		}
+		if (!empty($donneesProfil['id_partenaire'])) {
+			update_user_meta($id, 'id_partenaire', $donneesProfil['id_partenaire']);
+		}
+
+		return true;
 	}
 
 	protected function infosUtilisateurParId($id) {

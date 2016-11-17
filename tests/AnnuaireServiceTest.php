@@ -103,7 +103,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	public function testUtilisateurId() {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['id']['ok']);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', /*'courriel',*/ 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
@@ -131,7 +131,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	public function testUtilisateurIdentiteCompleteParCourriel() {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-complete-par-courriel']['ok']);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
@@ -139,7 +139,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['identite-complete-par-courriel']['multi']);
 		$this->assertCount(3, $data);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
@@ -167,7 +167,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 	public function testUtilisateurInfosParIds() {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['InfosParIds']['ok']);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', /*'courriel',*/ 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
@@ -175,7 +175,7 @@ class AnnuaireServiceTest extends PHPUnit_Framework_TestCase {
 		$data = $this->appelService($this->config['root_url'] . $this->tests['urls']['utilisateur']['InfosParIds']['multi']);
 		$this->assertCount(3, $data);
 		$this->assertArrayHasKeys(array(
-			'id', 'prenom', 'nom', 'courriel', 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
+			'id', 'prenom', 'nom', /*'courriel',*/ 'pseudo', 'pseudoUtilise', 'intitule', 'nomWiki'
 		), array_shift($data));
 	}
 
