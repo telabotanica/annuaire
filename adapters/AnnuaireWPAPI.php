@@ -228,23 +228,24 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			$infos['_groups'] = array();
 			// 4) groupes
 			// le tableau permet de retirer les filtres par défaut
-			$groupes = bp_get_user_groups($id, array(
-				"is_admin" => null,
-				"is_mod" => null
-			));
-
-			if ($groupes !== false) {
-				foreach ($groupes as $groupe) {
-					// infos du groupe (nom et slug)
-					$bp_group = groups_get_group(array('group_id' => $groupe->id ));
-					// on ne garde que certaines infos @TODO vérifier qu'on n'oublie rien
-					$infos['_groups'][$groupe->id] = array(
-						"id" => $groupe->id,
-						"slug" => $bp_group->slug,
-						"name" => $bp_group->name,
-						"is_admin" => $groupe->is_admin,
-						"is_mod" => $groupe->is_mod
-					);
+			if (function_exists('bp_get_user_groups')) {
+				$groupes = bp_get_user_groups($id, array(
+					"is_admin" => null,
+					"is_mod" => null
+				));
+				if ($groupes !== false) {
+					foreach ($groupes as $groupe) {
+						// infos du groupe (nom et slug)
+						$bp_group = groups_get_group(array('group_id' => $groupe->id ));
+						// on ne garde que certaines infos @TODO vérifier qu'on n'oublie rien
+						$infos['_groups'][$groupe->id] = array(
+							"id" => $groupe->id,
+							"slug" => $bp_group->slug,
+							"name" => $bp_group->name,
+							"is_admin" => $groupe->is_admin,
+							"is_mod" => $groupe->is_mod
+						);
+					}
 				}
 			}
 		}
