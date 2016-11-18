@@ -11,6 +11,7 @@ interface AnnuaireInterface {
 	public function idParCourriel($courriel);
 	public function getDateDerniereModifProfil($id);
 	public function inscrireUtilisateur($donneesProfil);
+	public function getAllRoles();
 
 	// -------------- rétrocompatibilité (11/2016) -----------------------------
 

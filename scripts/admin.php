@@ -2,9 +2,10 @@
 
 // composer
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../Annuaire.php';
 
 /** Chemin du fichier de clef - à synchroniser avec le service Auth ! */
-const CHEMIN_CLEF_AUTH = "../config/clef-auth.ini";
+const CHEMIN_CLEF_AUTH = __DIR__ . "/../config/clef-auth.ini";
 
 $actions = array("forger_jeton_admin");
 
@@ -42,13 +43,19 @@ switch($action) {
 		throw new Exception('une action déclarée dans $actions devrait avoir un "case" correspondant dans le "switch"');
 }
 
+/**
+ * Crée un jeton valable jusqu'en 2015, pour un utilisateur fictif "TB Admin" à
+ * l'adresse fictive sso-admin@tela-botanica.org, ayant tous les rôles fournis
+ * par l'annuaire @TODO vérifier que ça ne fait pas un jeton trop long
+ */
 function forger_jeton_admin() {
+	$annuaire = new Annuaire();
 	// jeton longue durée
 	$exp = strtotime('2050-01-15'); // le goût qui dure jusqu'à Vladivostok
 	// signature compatible avec le service Auth
 	$clef = file_get_contents(CHEMIN_CLEF_AUTH);
 	// données "admin"
-	$sub = 'admin@tela-botanica.org';
+	$sub = 'sso-admin@tela-botanica.org';
 	$jeton = array(
 		"iss" => "https://www.tela-botanica.org",
 		"token_id" => 'tb_auth_admin_token',
@@ -63,6 +70,7 @@ function forger_jeton_admin() {
 		"pseudoUtilise" => false,
 		"intitule" => "TB Admin",
 		"nomWiki" => "TBAdmin",
+		"permissions" => $annuaire->getAllRoles(),
 		"dateDerniereModif" => 0,
 		
 	);

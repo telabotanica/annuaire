@@ -168,6 +168,7 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 	//public abstract function identificationCourrielMdpHache($courriel, $mdpHache);
 	//public abstract function nbInscrits();
 	//public abstract function inscrireUtilisateur($donneesProfil);
+	//public abstract function getAllRoles();
 
 	// --------------- autres méthodes à implémenter ---------------------------
 

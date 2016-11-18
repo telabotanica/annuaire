@@ -150,6 +150,15 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		return true;
 	}
 
+	/**
+	 * Retourne tous les rôles disponibles; ici la liste des rôles de WP
+	 */
+	public function getAllRoles() {
+		global $wp_roles;
+		$roles = $wp_roles->roles;
+		return array_keys($roles);
+	}
+
 	protected function infosUtilisateurParId($id) {
 		return $this->infosUtilisateur($id);
 	}

@@ -1,6 +1,6 @@
 <?php
 
-require_once 'AnnuaireInterface.php';
+require_once __DIR__ . '/AnnuaireInterface.php';
 
 /**
  * Impémente l'interface AnnuaireInterface en mettant en jeu un design-pattern
@@ -12,7 +12,7 @@ class Annuaire implements AnnuaireInterface {
 
 	/** Config en JSON */
 	protected $config = array();
-	public static $CHEMIN_CONFIG = "config/config.json";
+	public static $CHEMIN_CONFIG = __DIR__ . "/config/config.json";
 
 	/** Implémentation de l'interface AnnuaireInterface par un adapteur */
 	protected $adapter;
@@ -30,7 +30,7 @@ class Annuaire implements AnnuaireInterface {
 
 		// adapteur
 		$adapterName = $this->config['adapter'];
-		$adapterPath = 'adapters/' . $adapterName . '.php';
+		$adapterPath = __DIR__ . '/adapters/' . $adapterName . '.php';
 		if (strpos($adapterName, "..") != false || $adapterName == '' || ! file_exists($adapterPath)) {
 			throw new Exception ("adapteur " . $adapterPath . " introuvable");
 		}
@@ -50,6 +50,10 @@ class Annuaire implements AnnuaireInterface {
 
 	public function inscrireUtilisateur($donneesProfil) {
 		return $this->adapter->inscrireUtilisateur($donneesProfil);
+	}
+
+	public function getAllRoles() {
+		return $this->adapter->getAllRoles();
 	}
 
 	// -------------- rétrocompatibilité (11/2016) -------------------
