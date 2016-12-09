@@ -233,7 +233,8 @@ class AnnuaireService extends BaseRestServiceTB {
 				"pseudo",
 				"pseudoUtilise", // obsolète
 				"intitule",
-				"nomWiki"
+				"nomWiki",
+				"avatar"
 			));
 		}
 		$this->sendJson($retour);
@@ -259,7 +260,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		// formatage des résultats
 		$retour = array();
 		foreach($infos as $email => $i) {
-			if (is_array($i)) {
+			if (! empty($i)) {
 				$retour[$email] = $this->sousTableau($i, array(
 					"id",
 					"prenom",
@@ -268,6 +269,7 @@ class AnnuaireService extends BaseRestServiceTB {
 					"pseudoUtilise", // obsolète
 					"intitule",
 					"nomWiki",
+					"avatar",
 					"groupes",
 					"permissions"
 				));
@@ -449,6 +451,7 @@ class AnnuaireService extends BaseRestServiceTB {
 					"pseudoUtilise", // obsolète
 					"intitule",
 					"nomWiki",
+					"avatar",
 					"permissions",
 					"groupes"
 				));
