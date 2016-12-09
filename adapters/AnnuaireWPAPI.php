@@ -174,6 +174,8 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		}
 		// garnir les infos
 		$infos = (array) $utilisateur->data;
+		// choper l'URL de l'avatar
+		$infos['avatar_url'] = html_entity_decode(bp_core_fetch_avatar('html=false&item_id=' . $id));
 
 		// 1bis) rôles SSO (permissions)
 		$infos['_roles'] = array_keys((array) $utilisateur->caps);
@@ -185,12 +187,12 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			if ($meta !== false) {
 				// on ne garde que certaines meta @TODO vérifier qu'on n'oublie rien
 				$metaAGarder = array(
-					"nickname" => $meta['nickname'][0],
+					"nickname" => (! empty($meta['nickname']) ? $meta['nickname'][0] : ''),
 					"first_name" => $meta['first_name'][0],
 					"last_name" => $meta['last_name'][0],
 					"description" => $meta['description'][0],
-					"{$this->prefix}capabilities" => $meta['test_capabilities'][0],
-					"{$this->prefix}user_level" => $meta['test_user_level'][0],
+					"{$this->prefixe}capabilities" => (! empty($meta['test_capabilities']) ? $meta['test_capabilities'][0] : ''),
+					"{$this->prefixe}user_level" => (! empty($meta['test_user_level']) ? $meta['test_user_level'][0] : ''),
 					"last_activity" => $meta['last_activity'][0]
 				);
 				$infos['_meta'] = $metaAGarder;
@@ -263,6 +265,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			"pseudo" => $pseudo,
 			"pseudoUtilise" => ($pseudo == $infos['display_name']), // obsolète
 			"intitule" => $infos['display_name'],
+			"avatar" => $infos['avatar_url'],
 			"groupes" => array()
 		);
 		// rôles @TODO valider la formalisation des permissions
