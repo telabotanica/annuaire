@@ -141,6 +141,9 @@ class AnnuaireService extends BaseRestServiceTB {
 			case "identite-par-courriel":
 				$this->identiteParCourriel();
 				break;
+			case "avatar-par-courriel":
+				$this->avatarParCourriel();
+				break;
 			case "identite-par-nom-wiki": // usage interne
 				$this->identiteParNomWiki();
 				break;
@@ -477,6 +480,24 @@ class AnnuaireService extends BaseRestServiceTB {
 
 		$retour = $this->lib->infosParCourriels($unOuPlusieursCourriels);
 		return $retour;
+	}
+
+	/**
+	 * Retourne l'URL de l'avatar (miniature) pour l'utilisateur dont le
+	 * courriel est fourni dans l'URL
+	 */
+	protected function avatarParCourriel() {
+		$retour = null;
+		// @TODO optimiser pour ne pas ramener toutes les infos
+		$infos = $this->infosParCourriels();
+		if (! empty($infos)) {
+			$infosUtilisateur = array_shift($infos);
+			if (isset($infosUtilisateur["avatar"])) {
+				// formatage des résultats
+				$retour = $infosUtilisateur["avatar"];
+			}
+		}
+		$this->sendJson($retour);
 	}
 
 	/**
