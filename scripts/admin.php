@@ -44,7 +44,7 @@ switch($action) {
 }
 
 /**
- * Crée un jeton valable jusqu'en 2015, pour un utilisateur fictif "TB Admin" à
+ * Crée un jeton valable jusqu'en 2050, pour un utilisateur fictif "TB Admin" à
  * l'adresse fictive sso-admin@tela-botanica.org, ayant tous les rôles fournis
  * par l'annuaire @TODO vérifier que ça ne fait pas un jeton trop long
  */
