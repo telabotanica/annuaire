@@ -22,6 +22,8 @@
 	},
 	"auth": {
 		// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
-		"mdp_magique_hache": ""
+		"mdp_magique_hache": "",
+		"nom_cookie": "tb_auth",
+		"duree_jeton": 900
 	}
 }

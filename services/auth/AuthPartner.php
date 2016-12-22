@@ -7,7 +7,7 @@
  */
 abstract class AuthPartner {
 
-	/** Injection de dépendance du service Auth, pour utiliser les méthodes comme decoderJetonManuellement() */
+	/** Injection de dépendance du service Auth */
 	protected $auth;
 
 	/** Injection de dépendance de la config des services */
@@ -15,6 +15,9 @@ abstract class AuthPartner {
 
 	/** Injection de dépendance de la lib Utilisateur depuis le service Auth */
 	protected $annuaire;
+
+	/** Injection de dépendance de la lib SSO depuis le service Auth */
+	protected $SSO;
 
 	/** Jeton brut retourné par le service d'authentification du partenaire */
 	protected $jetonPartenaire;
@@ -29,6 +32,7 @@ abstract class AuthPartner {
 		$this->auth = $authLib;
 		$this->config = $config;
 		$this->annuaire = $authLib->getAnnuaire();
+		$this->SSO = $this->annuaire->getSSO();
 		$this->idLocal = false;
 	}
 

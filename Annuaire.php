@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/AnnuaireInterface.php';
+require_once __DIR__ . '/lib/SSO.php';
 
 /**
  * Impémente l'interface AnnuaireInterface en mettant en jeu un design-pattern
@@ -17,6 +18,9 @@ class Annuaire implements AnnuaireInterface {
 	/** Implémentation de l'interface AnnuaireInterface par un adapteur */
 	protected $adapter;
 
+	/** Bibliothèque SSO */
+	protected $SSO;
+
 	public function __construct() {
 		// config
 		if (file_exists(self::$CHEMIN_CONFIG)) {
@@ -28,6 +32,9 @@ class Annuaire implements AnnuaireInterface {
 			throw new Exception("fichier de configuration " . self::$CHEMIN_CONFIG . " introuvable");
 		}
 
+		// SSO
+		$this->SSO = new SSO($this->config);
+
 		// adapteur
 		$adapterName = $this->config['adapter'];
 		$adapterPath = __DIR__ . '/adapters/' . $adapterName . '.php';
@@ -37,11 +44,22 @@ class Annuaire implements AnnuaireInterface {
 		require $adapterPath;
 		// on passe la config à l'adapteur - à lui de stocker ses paramètres
 		// dans un endroit correct (adapters.nomdeladapteur par exemple)
-		$this->adapter = new $adapterName($this->config);
+		$this->adapter = new $adapterName($this->config, $this->SSO);
+	}
+
+	/**
+	 * Renvoie la lib SSO (pour utilisation par le service Auth notamment)
+	 */
+	public function getSSO() {
+		return $this->SSO;
 	}
 
 	public function idParCourriel($courriel) {
 		return $this->adapter->idParCourriel($courriel);
+	}
+
+	public function courrielParId($id) {
+		return $this->adapter->courrielParId($id);
 	}
 
 	public function getDateDerniereModifProfil($id) {
@@ -97,5 +115,9 @@ class Annuaire implements AnnuaireInterface {
 
 	public function infosParCourriels($unOuPlusieursCourriels) {
 		return $this->adapter->infosParCourriels($unOuPlusieursCourriels);
+	}
+
+	public function envoyerMessage($destinataire, $sujet, $contenu) {
+		return $this->adapter->envoyerMessage($destinataire, $sujet, $contenu);
 	}
 }

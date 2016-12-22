@@ -25,7 +25,7 @@ class AuthPartnerPlantnet extends AuthPartner {
 		//var_dump($res); exit;
 		if (!empty($res['JWT'])) {
 			$this->jetonPartenaire = $res['JWT'];
-			$jetonDecode = $this->auth->decoderJetonManuellement($this->jetonPartenaire);
+			$jetonDecode = $this->SSO->decoderJetonManuellement($this->jetonPartenaire);
 			// stockage pour traitement dans les autres méthodes
 			$this->data = $jetonDecode['details'];
 			//var_dump($this->data); exit;

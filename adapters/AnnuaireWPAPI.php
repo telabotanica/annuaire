@@ -14,8 +14,8 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	/** Préfixe des tables Wordpress */
 	protected $prefixe;
 
-	public function __construct($config) {
-		parent::__construct($config);
+	public function __construct($config, $SSO) {
+		parent::__construct($config, $SSO);
 
 		// préfixe de tables pour les requêtes "en dur" @TODO essayer de s'en débarrasser
 		$this->prefixe = $this->config['adapters']['AnnuaireWPAPI']['prefixe_tables'];
@@ -36,6 +36,19 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			return false;
 		} else {
 			return $user->ID;
+		}
+	}
+
+	/**
+	 * Retourne l'adresse email de l'utilisateur WP en fonction de son ID
+	 */
+	public function courrielParId($id) {
+		$user = get_user_by('ID', $id);
+	
+		if ($user === false) {
+			return false;
+		} else {
+			return $user->user_email;
 		}
 	}
 
@@ -202,7 +215,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 					"description" => $meta['description'][0],
 					"{$this->prefixe}capabilities" => (! empty($meta['test_capabilities']) ? $meta['test_capabilities'][0] : ''),
 					"{$this->prefixe}user_level" => (! empty($meta['test_user_level']) ? $meta['test_user_level'][0] : ''),
-					"last_activity" => $meta['last_activity'][0]
+					"last_activity" => (! empty($meta['last_activity'][0]) ? $meta['last_activity'][0] : 0)
 				);
 				$infos['_meta'] = $metaAGarder;
 			}
@@ -292,5 +305,69 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		}
 
 		return $retour;
+	}
+
+	/**
+	 * Envoie un message (email) à l'utilisateur identifié par $idOuCourriel;
+	 * nécessite d'être identifié sur le SSO (cookie ou jeton); l'utilisateur en
+	 * cours est défini comme expéditeur
+	 * 
+	 * @param mixed $destinataires adresse courriel du destinataire, ou un
+	 *        tableau d'adresses pour de multiples destinataires
+	 * @param type $sujet sujet du message
+	 * @param type $contenu texte du message
+	 */
+	public function envoyerMessage($destinataires, $sujet, $contenu) {
+		// utilisation du service d'authentification SSO pour détecter
+		// l'utilisateur en cours
+		$utilisateur = $this->SSO->getUtilisateur();
+		if (empty($utilisateur['sub'])) {
+			throw new Exception("Vous devez être identifié pour poster un message");
+		}
+		$expediteur = $utilisateur['sub'];
+		$nomExpediteur = $utilisateur['intitule'];
+
+		//var_dump($utilisateur); exit;
+
+		// formatage du message
+		$mail = new PHPMailer();
+
+		$mail->setFrom($expediteur, $nomExpediteur);
+		$mail->Subject = $sujet;
+		// le texte est-il en HTML ?
+		$mail->Body = $contenu;
+		$estEnHTML = ($contenu != strip_tags($contenu));
+		$mail->isHTML($estEnHTML);
+		/*if ($estEnHTML) {
+			// d'après http://stackoverflow.com/questions/25873068/converting-phpmailer-html-message-to-text-message
+			// le convertisseur HTML => texte de PHPMailer a été supprimé, il
+			// faut en utiliser un manuellement, ou dans une closure comme 3e
+			// paramètre de ->msgHtml() @TODO le faire un jour
+			// $mail->AltBody = ;
+		}*/
+		// utilisera PHP mail() pour envoyer
+		$mail->isMail();
+		// encodage
+		$mail->CharSet = 'UTF-8';
+		$mail->setLanguage('fr');
+
+		// @WARNING RÉTROCOMPATIBILITÉ - aucune idée de si ces entêtes sont
+		// utiles ou nécessaires
+		$mail->addCustomHeader('X-Mailer', 'Annuaire Tela Botanica');
+		$mail->addCustomHeader('X-abuse-contact', 'annuaire@tela-botanica.org');
+		// $mail->addReplyTo(...); // @TODO expéditeur ou no-reply ?
+
+		// ajout des destinataires
+		if (!is_array($destinataires)) {
+			$destinataires = [$destinataires];
+		}
+		foreach ($destinataires as $destinataire) {
+			$mail->addAddress($destinataire);
+		}
+		// envoi
+		if(! $mail->send()) {
+			throw new Exception('Erreur PHPMailer: ' . $mail->ErrorInfo);
+		}
+		return true;
 	}
 }

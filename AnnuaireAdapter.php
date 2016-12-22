@@ -15,8 +15,12 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 	/** Si true, indique que le code est appelé par PHP en CGI */
 	protected $cgi;
 
-	public function __construct($config) {
+	/** Lib SSO */
+	protected $SSO;
+
+	public function __construct($config, $SSO) {
 		$this->config = $config;
+		$this->SSO = $SSO;
 
 		// détection du type d'API : CGI ou module Apache - le CGI ne permet pas
 		// d'utiliser l'authentification HTTP Basic :-(
@@ -163,12 +167,14 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 	 * Méthodes de l'interface ne donnant pas lieu à un traitement générique
 	 */
 	//public abstract function idParCourriel($courriel);
+	//public abstract function courrielParId($id);
 	//public abstract function getDateDerniereModifProfil($id);
 	//public abstract function identificationCourrielMdp($courriel, $mdp);
 	//public abstract function identificationCourrielMdpHache($courriel, $mdpHache);
 	//public abstract function nbInscrits();
 	//public abstract function inscrireUtilisateur($donneesProfil);
 	//public abstract function getAllRoles();
+	//public abstract function envoyerMessage($destinataire, $sujet, $contenu);
 
 	// --------------- autres méthodes à implémenter ---------------------------
 

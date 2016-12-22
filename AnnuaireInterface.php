@@ -9,6 +9,7 @@ interface AnnuaireInterface {
 	// -------------- méthodes modernes ----------------------------------------
 
 	public function idParCourriel($courriel);
+	public function courrielParId($id);
 	public function getDateDerniereModifProfil($id);
 	public function inscrireUtilisateur($donneesProfil);
 	public function getAllRoles();
@@ -20,4 +21,5 @@ interface AnnuaireInterface {
 	public function nbInscrits();
 	public function infosParids($unOuPlusieursIds);
 	public function infosParCourriels($unOuPlusieursCourriels);
+	public function envoyerMessage($destinataire, $sujet, $contenu);
 }
