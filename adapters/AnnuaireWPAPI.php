@@ -312,6 +312,9 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 * nécessite d'être identifié sur le SSO (cookie ou jeton); l'utilisateur en
 	 * cours est défini comme expéditeur
 	 * 
+	 * @TODO permettre de choisir l'adresse d'expéditeur (afficher le véritable
+	 * expéditeur ou une adresse choisie, plutôt que no-reply@)
+	 * 
 	 * @param mixed $destinataires adresse courriel du destinataire, ou un
 	 *        tableau d'adresses pour de multiples destinataires
 	 * @param type $sujet sujet du message
@@ -321,18 +324,26 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		// utilisation du service d'authentification SSO pour détecter
 		// l'utilisateur en cours
 		$utilisateur = $this->SSO->getUtilisateur();
+		//var_dump($utilisateur); exit;
 		if (empty($utilisateur['sub'])) {
 			throw new Exception("Vous devez être identifié pour poster un message");
 		}
+		$masquerExpediteur = $this->config['adapters']['AnnuaireWPAPI']['messages']['masquer_expediteur'];
 		$expediteur = $utilisateur['sub'];
+		if (empty($expediteur) || $masquerExpediteur) {
+			$expediteur = $this->config['adapters']['AnnuaireWPAPI']['messages']['expediteur'];
+		}
 		$nomExpediteur = $utilisateur['intitule'];
-
-		//var_dump($utilisateur); exit;
 
 		// formatage du message
 		$mail = new PHPMailer();
 
-		$mail->setFrom($expediteur, $nomExpediteur);
+		$mail->setFrom($expediteur, "$nomExpediteur via Tela Botanica");
+		$sujet = trim($sujet);
+		if (empty($sujet)) {
+			// sujet par défaut
+			$sujet = $this->config['adapters']['AnnuaireWPAPI']['messages']['sujet_par_defaut'];
+		}
 		$mail->Subject = $sujet;
 		// le texte est-il en HTML ?
 		$mail->Body = $contenu;

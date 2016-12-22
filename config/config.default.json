@@ -4,7 +4,15 @@
 	"adapters": {
 		"AnnuaireWPAPI": {
 			"chemin_wp": "/home/stuff/www/wordpress",
-			"prefixe_tables": "wp_"
+			"prefixe_tables": "wp_",
+			"messages": {
+				// si false, le véritable expéditeur sera indiqué s'il est connu
+				"masquer_expediteur": true,
+				// si masquer_expediteur est true, adresse à placer dans
+				// l'entête From: des emails envoyés par le service de messagerie
+				"expediteur": "no-reply@tela-botanica.org",
+				"sujet_par_defaut": "Message via Tela Botanica"
+			}
 		},
 		"AnnuaireWP": {
 			"bdd": {
