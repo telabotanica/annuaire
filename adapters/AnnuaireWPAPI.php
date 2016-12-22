@@ -315,7 +315,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 * @param mixed $destinataires adresse courriel du destinataire, ou un
 	 *        tableau d'adresses pour de multiples destinataires
 	 * @param type $sujet sujet du message
-	 * @param type $contenu texte du message
+	 * @param type $contenu contenu du message, accepte le HTML et le texte simple
 	 */
 	public function envoyerMessage($destinataires, $sujet, $contenu) {
 		// utilisation du service d'authentification SSO pour détecter
