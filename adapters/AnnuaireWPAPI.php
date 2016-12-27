@@ -48,7 +48,14 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		if ($user === false) {
 			return false;
 		} else {
-			return $user->user_email;
+			// bulletproof cracra
+			$retour = null;
+			if (! empty($user->user_email)) {
+				$retour = $user->user_email;
+			} elseif (strpos($user->user_login, '@') !== false) {
+				$retour = $user->user_login;
+			}
+			return $retour;
 		}
 	}
 

@@ -145,10 +145,18 @@ class AnnuaireService extends BaseRestServiceTB {
 
 		// message
 		$contenu = $this->getParam('contenu_message');
+		// bulletproof rétrocompat cracra (1/2)
+		if (empty($contenu)) {
+			$contenu = $this->getParam('message');
+		}
 		$sujet = $this->getParam('sujet_message');
+		// bulletproof rétrocompat cracra (2/2)
+		if (empty($sujet)) {
+			$sujet = $this->getParam('sujet');
+		}
 		$redirect = $this->getParam('redirect');
 		if (empty($contenu)) {
-			$this->sendError("Parametre 'contenu_message' manquant");
+			$this->sendError("Parametre 'contenu_message' ou 'message' manquant");
 		}
 		if (empty($sujet)) {
 			$this->sendError("Parametre 'sujet_message' manquant");

@@ -254,3 +254,20 @@ class SSO {
 		return $jwtSortie;
 	}
 }
+
+
+/**
+ * Compatibilité nginx / certaines versions de PHP (CGI)
+ * merci http://php.net/manual/fr/function.getallheaders.php
+ */
+if (! function_exists('apache_request_headers')) {
+	function apache_request_headers() {
+		$headers = '';
+		foreach ($_SERVER as $name => $value) {
+			if (substr($name, 0, 5) == 'HTTP_') {
+				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+			}
+		}
+		return $headers;
+	}
+}
