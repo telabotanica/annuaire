@@ -6,9 +6,8 @@
 	"auth": {
 		// si true, refusera toute connexion non-HTTPS
 		"forcer_ssl": false,
-		"nom_cookie": "tb_auth",
+		// NOTE: le nom_cookie est défini dans config.json
 		"duree_cookie": 31536000,
-		"duree_jeton": 900,
 		// utiliser 'tela-botanica.org' ou '.tela-botanica.org' pour lever la restriction sur les sous-domaines
 		"domaine_cookie": "localhost",
 		// si true, Curl ne vérifiera pas l'authenticité de l'hôte (SSL de Sequoia trop vieux)

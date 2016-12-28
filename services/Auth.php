@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Tentative de service d'authentification / SSO bien organisé
  * SSO - Mettez un tigre dans votre annuaire !
@@ -7,23 +8,11 @@
  */
 class Auth extends BaseRestServiceTB {
 
-	/** Chemin du fichier de clef */
-	const CHEMIN_CLEF_AUTH = "config/clef-auth.ini";
-
-	/** Clef utilisée pour signer les jetons JWT */
-	private $clef;
-
 	/** Si true, refusera une connexion non-HTTPS */
 	protected $forcerSSL = true;
 
-	/** Durée en secondes du jeton (doit être faible en l'absence de mécanisme d'invalidation) */
-	protected $dureeJeton = 900;
-
 	/** Durée en secondes du cookie */
 	protected $dureeCookie = 31536000; // 3600 * 24 * 365
-
-	/** Nom du cookie */
-	protected $nomCookie = "this_is_not_a_good_cookie_name";
 
 	/** Domaine du cookie - lire la doc de set_cookie() */
 	protected $domaineCookie = null;
@@ -34,6 +23,9 @@ class Auth extends BaseRestServiceTB {
 	/** Bibliothèque de gestion des utilisateurs */
 	protected $annuaire;
 
+	/** Bibliothèque SSO */
+	protected $libSSO;
+
 	public function __construct($config, $annuaire) {
 		parent::__construct($config);
 		// Auth est un sous-service : suppression de la première ressource,
@@ -41,15 +33,10 @@ class Auth extends BaseRestServiceTB {
 		// @TODO faire une classe de sous-service plus astucieuse un jour
 		array_shift($this->resources);
 
-		$this->clef = file_get_contents(self::CHEMIN_CLEF_AUTH);
-		if (strlen($this->clef) < 16) {
-			throw new Exception("Clef trop courte - placez une clef d'au moins 16 caractères dans configurations/clef-auth.ini");
-		}
-
 		$this->forcerSSL = ($this->config['auth']['forcer_ssl'] == "1");
-		$this->dureeJeton = $this->config['auth']['duree_jeton'];
 		$this->dureeCookie = $this->config['auth']['duree_cookie'];
-		$this->nomCookie = $this->config['auth']['nom_cookie'];
+		// le nom du cookie est défini dans la lib SSO (pas pratique mais dur de
+		// faire mieux)
 		$this->cookieSecurise = $this->config['auth']['cookie_securise'];
 		if (! empty($this->config['auth']['domaine_cookie'])) {
 			$this->domaineCookie = $this->config['auth']['domaine_cookie'];
@@ -57,6 +44,8 @@ class Auth extends BaseRestServiceTB {
 
 		// lib annuaire
 		$this->annuaire = $annuaire;
+		// lib SSO - raccourci
+		$this->libSSO = $this->annuaire->getSSO();
 	}
 
 	/**
@@ -86,13 +75,13 @@ class Auth extends BaseRestServiceTB {
 						"partner" => "nom du partenaire (ex: plantnet)"
 					),
 					"alias" => $uri . "login",
-					"description" => "connexion avec login et mot de passe; renvoie un jeton et un cookie " . $this->nomCookie
+					"description" => "connexion avec login et mot de passe; renvoie un jeton et un cookie " . $this->libSSO->getNomCookie()
 				),
 				'deconnexion' => array(
 					"uri" => $uri . "deconnexion",
 					"parametres" => null,
 					"alias" => $uri . "logout",
-					"description" => "déconnexion; renvoie un jeton null et supprime le cookie " . $this->nomCookie
+					"description" => "déconnexion; renvoie un jeton null et supprime le cookie " . $this->libSSO->getNomCookie()
 				),
 				'identite' => array(
 					"uri" => $uri . "identite",
@@ -104,7 +93,7 @@ class Auth extends BaseRestServiceTB {
 						$uri . "rafraichir",
 						$uri . "refresh"
 					),
-					"description" => "confirme l'authentification et la session; rafraîchit le jeton fourni (dans le cookie " . $this->nomCookie . ", le header Authorization ou en paramètre)"
+					"description" => "confirme l'authentification et la session; rafraîchit le jeton fourni (dans le cookie " . $this->libSSO->getNomCookie() . ", le header Authorization ou en paramètre)"
 				),
 				'verifierjeton' => array(
 					"uri" => $uri . "verifierjeton",
@@ -209,7 +198,7 @@ class Auth extends BaseRestServiceTB {
 		if ($partenaire != '') {
 			$classeAuth = "AuthPartner" . ucfirst(strtolower($partenaire));
 			try {
-				$fichierClasse = getcwd() . "/services/auth/$classeAuth.php"; // @TODO vérifier si getcwd() est fiable dans ce cas
+				$fichierClasse = __DIR__ . "/auth/$classeAuth.php";
 				if (! file_exists($fichierClasse)) {
 					$this->sendError("unknown partner '$partenaire'");
 				}
@@ -258,7 +247,7 @@ class Auth extends BaseRestServiceTB {
 		// infos partenaire
 		$infos = array_merge($infos, $infosPartenaire);
 		// création du jeton
-		$jwt = $this->creerJeton($login, $infos);
+		$jwt = $this->libSSO->creerJeton($login, $infos);
 		// création du cookie
 		$this->creerCookie($jwt);
 		// redirection si demandée - se charge de sortir du script en cas de succès
@@ -267,8 +256,8 @@ class Auth extends BaseRestServiceTB {
 		$this->sendJson(array(
 			"session" => true,
 			"token" => $jwt,
-			"duration" => intval($this->dureeJeton),
-			"token_id" => $this->nomCookie,
+			"duration" => intval($this->libSSO->getDureeJeton()),
+			"token_id" => $this->libSSO->getNomCookie(),
 			"last_modif" => $infos['dateDerniereModif']
 		));
 	}
@@ -289,7 +278,7 @@ class Auth extends BaseRestServiceTB {
 		$this->sendJson(array(
 				"session" => false,
 				"token" => $jwt,
-				"token_id" => $this->nomCookie
+				"token_id" => $this->libSSO->getNomCookie()
 		));
 	}
 
@@ -306,47 +295,8 @@ class Auth extends BaseRestServiceTB {
 	 * stratégie, l'inverse est peut-être plus malin
 	 */
 	protected function identite() {
-		$cookieAvecJetonValide = false;
-		$jetonRetour = null;
 		$erreur = '';
-		// lire cookie
-		if (isset($_COOKIE[$this->nomCookie])) {
-			$jwt = $_COOKIE[$this->nomCookie];
-			try {
-				// rafraîchir jeton quelque soit son état - "true" permet
-				// d'ignorer les ExpiredException (on rafraîchit le jeton
-				// expiré car le cookie est encore valide)
-				$jetonRetour = $this->rafraichirJeton($jwt, true);
-				// on ne tentera pas de lire un jeton fourni en paramètre
-				$cookieAvecJetonValide = true;
-			} catch (Exception $e) {
-				// si le rafraîchissement a échoué (jeton invalide - hors expiration - ou vide)
-				// on ne fait rien et on tente la suite (jeton fourni hors cookie ?)
-				$erreur = "invalid token in cookie";
-			}
-		}
-		// si le cookie n'existait pas ou ne contenait pas un jeton
-		if (! $cookieAvecJetonValide) {
-			// lire jeton depuis header ou paramètre
-			$jwt = $this->lireJetonDansHeader();
-			if ($jwt == null) {
-				// dernière chance
-				$jwt = $this->getParam('token');
-			}
-			// toutes les possibilités ont été essayées
-			if ($jwt != null) {
-				try {
-					// rafraîchir jeton si non expiré
-					$jetonRetour = $this->rafraichirJeton($jwt);
-				} catch (Exception $e) {
-					// si le rafraîchissement a échoué (jeton invalide, expiré ou vide)
-					$erreur = "invalid or expired token in Authorization header or parameter <token>";
-				}
-			} else {
-				// pas de jeton valide passé en paramètre
-				$erreur = ($erreur == "" ? "no token or cookie" : "invalid token in cookie / invalid or expired token in Authorization header or parameter <token>");
-			}
-		}
+		$jetonRetour = $this->libSSO->identite($erreur);
 		// redirection si demandée - se charge de sortir du script en cas de succès
 		$this->rediriger($jetonRetour);
 		// renvoi jeton
@@ -356,8 +306,8 @@ class Auth extends BaseRestServiceTB {
 			$this->sendJson(array(
 					"session" => true,
 					"token" => $jetonRetour,
-					"duration" => intval($this->dureeJeton),
-					"token_id" => $this->nomCookie
+					"duration" => intval($this->libSSO->getDureeJeton()),
+					"token_id" => $this->libSSO->getNomCookie()
 			));
 		}
 	}
@@ -379,10 +329,10 @@ class Auth extends BaseRestServiceTB {
 			// pour spécifier à la cible qu'on a bien traité sa requête - permet
 			// aussi de gérer les déconnexions en renvoyant un jeton vide
 			$separateur = (parse_url($url_redirection, PHP_URL_QUERY) == NULL) ? '?' : '&';
-			$url_redirection .= $separateur.'Authorization='.$jetonRetour;
+			$url_redirection .= $separateur.'Authorization=' . $jetonRetour;
 
 			// retour à l'envoyeur !
-			header('Location: '.$url_redirection);
+			header('Location: ' . $url_redirection);
 			exit;
 		}
 	}
@@ -395,7 +345,7 @@ class Auth extends BaseRestServiceTB {
 	protected function verifierJeton() {
 		// vérifie que le jeton provient bien d'ici,
 		// et qu'il est encore valide (date)
-		$jwt = $this->lireJetonDansHeader();
+		$jwt = $this->libSSO->lireJetonDansHeader();
 		if ($jwt == null) {
 			$jwt = $this->getParam('token');
 			if ($jwt == '') {
@@ -403,8 +353,7 @@ class Auth extends BaseRestServiceTB {
 			}
 		}
 		try {
-			$jeton = JWT::decode($jwt, $this->clef, array('HS256'));
-			$jeton = (array) $jeton;
+			$this->libSSO->decoderJeton($jwt);
 		} catch (Exception $e) {
 			$this->sendError($e->getMessage());
 			exit;
@@ -413,117 +362,13 @@ class Auth extends BaseRestServiceTB {
 	}
 
 	/**
-	 * Reçoit un jeton JWT, et s'il est non-vide ("sub" != null), lui redonne
-	 * une période de validité de $this->dureeJeton; si $ignorerExpiration
-	 * vaut true, rafraîchira le jeton même s'il a expiré
-	 * (attention à ne pas appeler cette méthode n'importe comment !);
-	 * jette une exception si le jeton est vide, mal signé ou autre erreur,
-	 * ou s'il a expiré et que $ignorerExpiration est différent de true
-	 * 
-	 * @param string $jwt le jeton JWT
-	 * @return string le jeton rafraîchi
-	 */
-	protected function rafraichirJeton($jwt, $ignorerExpiration=false) /* throws Exception */ {
-		$infos = array();
-		// vérification avec lib JWT
-		try {
-			$infos = JWT::decode($jwt, $this->clef, array('HS256'));
-			$infos = (array) $infos;
-		} catch (ExpiredException $e) {
-			if ($ignorerExpiration === true) {
-				// on se fiche qu'il soit expiré
-				// décodage d'un jeton expiré 
-				// @WARNING considère que la lib JWT jette ExpiredException en dernier (vrai 12/05/2015),
-				// ce qui signifie que la signature et le domaine sont tout de même valides - à surveiller !
-				$infos = $this->decoderJetonManuellement($jwt);
-			} else {
-				// on renvoie l'exception plus haut
-				throw $e;
-			}
-		}
-		// vérification des infos
-		if (empty($infos['sub'])) {
-			// jeton vide (wtf?)
-			throw new Exception("empty token (no <sub>)");
-		}
-		// rafraîchissement
-		$infos['exp'] = time() + $this->dureeJeton;
-		$jwtSortie = JWT::encode($infos, $this->clef);
-
-		return $jwtSortie;
-	}
-
-	/**
-	 * Décode manuellement un jeton JWT, SANS VÉRIFIER SA SIGNATURE OU
-	 * SON DOMAINE ! @WARNING ne pas utiliser hors du cas d'un jeton
-	 * correct (vérifié avec la lib JWT) mais expiré !
-	 * Public car utilisé par les classes AuthPartner (@TODO stratégie à valider)
-	 * @param string $jwt un jeton vérifié comme valide, mais expiré
-	 */
-	public function decoderJetonManuellement($jwt) {
-		$parts = explode('.', $jwt);
-		$payload = $parts[1];
-		$payload = base64_decode($payload);
-		$payload = json_decode($payload, true);
-
-		return $payload;
-	}
-
-	/**
-	 * Crée un jeton JWT signé avec la clef
-	 * 
-	 * @param mixed $sub subject: l'id utilisateur du détenteur du jeton si authentifié, null sinon
-	 * @param array $donnees les données à ajouter au jeton (infos utilisateur)
-	 * @param string $exp la date d'expiration du jeton, par défaut la date actuelle plus $this->dureeJeton
-	 * 
-	 * @return string un jeton JWT signé
-	 */
-	protected function creerJeton($sub, $donnees=array(), $exp=null) {
-		if ($exp === null) {
-			$exp = time() + $this->dureeJeton;
-		}
-		$jeton = array(
-			"iss" => "https://www.tela-botanica.org",
-			"token_id" => $this->nomCookie,
-			//"aud" => "http://example.com",
-			"sub" => $sub,
-			"iat" => time(),
-			"exp" => $exp,
-			//"nbf" => time() + 60,
-			"scopes" => array("tela-botanica.org")
-		);
-		if (! empty($donnees)) {
-			$jeton = array_merge($jeton, $donnees);
-		}
-		$jwt = JWT::encode($jeton, $this->clef);
-
-		return $jwt;
-	}
-
-	/**
-	 * Essaye de trouver un jeton JWT non vide dans l'entête HTTP $nomHeader (par
-	 * défaut "Authorization")
-	 * 
-	 * @param string $nomHeader nom de l'entête dans lequel chercher le jeton
-	 * @return String un jeton JWT ou null
-	 */
-	protected function lireJetonDansHeader($nomHeader="Authorization") {
-		$jwt = null;
-		$headers = apache_request_headers();
-		if (isset($headers[$nomHeader]) && ($headers[$nomHeader] != "")) {
-			$jwt = $headers[$nomHeader];
-		}
-		return $jwt;
-	}
-
-	/**
-	 * Crée un cookie de durée $this->dureeCookie, nommé $this->nomCookie et
-	 * contenant $valeur
+	 * Crée un cookie de durée $this->dureeCookie, nommé
+	 * $this->lib->getNomCookie() et contenant $valeur
 	 * 
 	 * @param string $valeur le contenu du cookie (de préférence un jeton JWT)
 	 */
 	protected function creerCookie($valeur) {
-		setcookie($this->nomCookie, $valeur, time() + $this->dureeCookie, '/', $this->domaineCookie, $this->cookieSecurise);
+		setcookie($this->libSSO->getNomCookie(), $valeur, time() + $this->dureeCookie, '/', $this->domaineCookie, $this->cookieSecurise);
 	}
 
 	/**
@@ -534,10 +379,10 @@ class Auth extends BaseRestServiceTB {
 	 * @param string $valeur la valeur du cookie, par défaut ""
 	 */
 	protected function detruireCookie() {
-		setcookie($this->nomCookie, "", -1, '/', $this->domaineCookie, $this->cookieSecurise);
+		setcookie($this->libSSO->getNomCookie(), "", -1, '/', $this->domaineCookie, $this->cookieSecurise);
 		// mode transition: supprime l'ancien cookie posé sur "www.tela-botanica.org" sans quoi on ne peut plus se déconnecter!
 		// @TODO supprimer au bout d'un moment
-		setcookie($this->nomCookie, "", -1, '/', null, $this->cookieSecurise);
+		setcookie($this->libSSO->getNomCookie(), "", -1, '/', null, $this->cookieSecurise);
 	}
 
 	/**
@@ -555,66 +400,5 @@ class Auth extends BaseRestServiceTB {
 			$this->sendError("HTTPS required");
 			exit;
 		}
-	}
-}
-
-/**
- * Mode moderne pour PHP < 5.4
- * @TODO supprimer lors du démantèlement de Sequoia
- */
-if (!function_exists('http_response_code')) {
-	function http_response_code($code = NULL) {
-		if ($code !== NULL) {
-			switch ($code) {
-				case 100: $text = 'Continue'; break;
-				case 101: $text = 'Switching Protocols'; break;
-				case 200: $text = 'OK'; break;
-				case 201: $text = 'Created'; break;
-				case 202: $text = 'Accepted'; break;
-				case 203: $text = 'Non-Authoritative Information'; break;
-				case 204: $text = 'No Content'; break;
-				case 205: $text = 'Reset Content'; break;
-				case 206: $text = 'Partial Content'; break;
-				case 300: $text = 'Multiple Choices'; break;
-				case 301: $text = 'Moved Permanently'; break;
-				case 302: $text = 'Moved Temporarily'; break;
-				case 303: $text = 'See Other'; break;
-				case 304: $text = 'Not Modified'; break;
-				case 305: $text = 'Use Proxy'; break;
-				case 400: $text = 'Bad Request'; break;
-				case 401: $text = 'Unauthorized'; break;
-				case 402: $text = 'Payment Required'; break;
-				case 403: $text = 'Forbidden'; break;
-				case 404: $text = 'Not Found'; break;
-				case 405: $text = 'Method Not Allowed'; break;
-				case 406: $text = 'Not Acceptable'; break;
-				case 407: $text = 'Proxy Authentication Required'; break;
-				case 408: $text = 'Request Time-out'; break;
-				case 409: $text = 'Conflict'; break;
-				case 410: $text = 'Gone'; break;
-				case 411: $text = 'Length Required'; break;
-				case 412: $text = 'Precondition Failed'; break;
-				case 413: $text = 'Request Entity Too Large'; break;
-				case 414: $text = 'Request-URI Too Large'; break;
-				case 415: $text = 'Unsupported Media Type'; break;
-				case 500: $text = 'Internal Server Error'; break;
-				case 501: $text = 'Not Implemented'; break;
-				case 502: $text = 'Bad Gateway'; break;
-				case 503: $text = 'Service Unavailable'; break;
-				case 504: $text = 'Gateway Time-out'; break;
-				case 505: $text = 'HTTP Version not supported'; break;
-				case 666: $text = 'Couscous overheat'; break;
-				default:
-					exit('Unknown http status code "' . htmlentities($code) . '"');
-					break;
-			}
-
-			$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-			header($protocol . ' ' . $code . ' ' . $text);
-			$GLOBALS['http_response_code'] = $code;
-		} else {
-			$code = (isset($GLOBALS['http_response_code']) ? $GLOBALS['http_response_code'] : 200);
-		}
-		return $code;
 	}
 }

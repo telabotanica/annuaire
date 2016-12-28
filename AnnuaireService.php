@@ -80,6 +80,36 @@ class AnnuaireService extends BaseRestServiceTB {
 		}
 	}
 
+	protected function post() {
+		// réponse positive par défaut;
+		http_response_code(200);
+
+		$nomService = strtolower(array_shift($this->resources));
+		//var_dump($nomService);
+		switch($nomService) {
+			case 'utilisateur':
+				// @WARNING RÉTROCOMPATIBILITÉ
+				// l'id ou courriel utilisateur est passé avant l'action
+				if (count($this->resources) > 0) {
+					$idOuCourriel = array_shift($this->resources);
+					// action
+					if (count($this->resources) > 0) {
+						$action = strtolower(array_shift($this->resources));
+						switch ($action) {
+							case "message":
+								$this->message($idOuCourriel);
+								break;
+							default:
+								$this->usage();
+						}
+					}
+				}
+				break;
+			default:
+				$this->usage();
+		}
+	}
+
 	// https://.../service:annuaire:auth/...
 	protected function auth() {
 		// service d'authentification SSO
@@ -87,30 +117,79 @@ class AnnuaireService extends BaseRestServiceTB {
 		$auth->run();
 	}
 
-	protected function post() {
-		
-	}
+	// -------------- rétrocompatibilité (11/2016) -------------------
+	// l'organisation des services et les noms d'action sont hérités de
+	// l'annuaire précédent @TODO homogénéiser et réorganiser, dans un ou
+	// plusieurs sous-services (comme "Auth")
 
 	/**
-	 * POST
-	 * 	http://www.tela-botanica.org/service:annuaire:utilisateur/24604/message
+	 * @WARNING MÉTHODE DE RÉTROCOMPATIBILITÉ
+	 * 
+	 * Envoie un message (email) à l'utilisateur identifié par $idOuCourriel
+	 * Nécessite un jeton SSO pour détecter l'expéditeur
+	 * 
+	 * POST	http://www.tela-botanica.org/service:annuaire:utilisateur/24604/message
+	 * POST	http://www.tela-botanica.org/service:annuaire:utilisateur/mathias@tela-botanica.org/message
 	 */
-	protected function message() {
-		
+	protected function message($idOuCourriel) {
+		// destinataire (adresse email)
+		// WTF ? Rétrocompatibilité...
+		// le destinataire devrait *toujours* être défini par $idOuCourriel
+		$destinataire = $this->getParam('destinataire', $idOuCourriel);
+		if (is_numeric($destinataire)) {
+			$destinataire = $this->lib->courrielParId($destinataire);
+		}
+		if (empty($destinataire)) {
+			$this->sendError("Impossible de trouver l'utilisateur [$idOuCourriel]");
+		}
+
+		// message
+		$contenu = $this->getParam('contenu_message');
+		// bulletproof rétrocompat cracra (1/2)
+		if (empty($contenu)) {
+			$contenu = $this->getParam('message');
+		}
+		$sujet = $this->getParam('sujet_message');
+		// bulletproof rétrocompat cracra (2/2)
+		if (empty($sujet)) {
+			$sujet = $this->getParam('sujet');
+		}
+		$redirect = $this->getParam('redirect');
+		if (empty($contenu)) {
+			$this->sendError("Parametre 'contenu_message' ou 'message' manquant");
+		}
+		if (empty($sujet)) {
+			$this->sendError("Parametre 'sujet_message' manquant");
+		}
+
+		// envoi
+		$retour = $this->lib->envoyerMessage($destinataire, $sujet, $contenu);
+		if ($retour) {
+			if (! empty($redirect)) {
+				// rétrocompatibilité à deux ronds
+				if (strtolower(substr($redirect, 0, 4)) != 'http') {
+					$redirect = 'http://' . $redirect;
+				}
+				header('Location: ' . $redirect);
+				exit;
+			} else {
+				$this->sendJson("OK");
+			}
+		} else {
+			// ne devrait jamais se produire, la lib est censée jeter une
+			// exception en cas de pb
+			$this->sendError("Erreur lors de l'envoi du message");
+		}
 	}
 
 	/**
+	 * @TODO
 	 * POST
 	 * http://www.tela-botanica.org/service:annuaire:utilisateur (POST: methode=connexion, courriel, mdp, persistance)
 	 */
 	protected function connexion() {
 		
 	}
-
-	// -------------- rétrocompatibilité (11/2016) -------------------
-	// l'organisation des services et les noms d'action sont hérités de
-	// l'annuaire précédent @TODO homogénéiser et réorganiser, dans un ou
-	// plusieurs sous-services (comme "Auth")
 
 	// https://.../service:annuaire:nbinscrits/...
 	protected function nbInscrits() {

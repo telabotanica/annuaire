@@ -4,6 +4,7 @@ require_once __DIR__ . '/../AnnuaireAdapter.php';
 
 /**
  * Implémentation de référence de l'Annuaire sur la base de données Wordpress
+ * @WARNING OBSOLETE, utiliser plutôt AnnuaireWPAPI
  */
 class AnnuaireWP extends AnnuaireAdapter {
 
@@ -13,8 +14,8 @@ class AnnuaireWP extends AnnuaireAdapter {
 	/** Handler PDO */
 	protected $bdd;
 
-	public function __construct($config) {
-		parent::__construct($config);
+	public function __construct($config, $SSO) {
+		parent::__construct($config, $SSO);
 
 		// connexion BDD
 		$configBdd = $this->config['adapters']['AnnuaireWP']['bdd'];
@@ -45,6 +46,26 @@ class AnnuaireWP extends AnnuaireAdapter {
 			return false;
 		} else {
 			return intval($d['ID']);
+		}
+	}
+
+	// @TODO À TESTER
+	public function courrielParId($id) {
+		// protection
+		$idP = $this->bdd->quote($id);
+		// requête
+		$q = "SELECT user_email FROM {$this->prefixe}users "
+			. "WHERE ID = $idP "
+			. "AND user_status != 1 "
+			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key')"
+		;
+		$r = $this->bdd->query($q);
+		$d = $r->fetch();
+
+		if ($d === false) {
+			return false;
+		} else {
+			return $d['user_email'];
 		}
 	}
 
@@ -144,6 +165,10 @@ class AnnuaireWP extends AnnuaireAdapter {
 		throw new Exception("inscrireUtilisateur: pas encore implémenté");
 		// Attention aux hooks
 		// https://fr.wordpress.org/plugins/json-api-user/
+	}
+
+	public function getAllRoles() {
+		throw new Exception("getAllRoles: pas encore implémenté");
 	}
 
 	// micro-optimisation (économise 1 requête)
@@ -289,4 +314,9 @@ class AnnuaireWP extends AnnuaireAdapter {
 		//var_dump($retour);
 		return $retour;
 	}
+
+	public function envoyerMessage($destinataire, $sujet, $contenu) {
+		throw new Exception("envoyerMessage: pas encore implémenté");
+	}
+
 }
