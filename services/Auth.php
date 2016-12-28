@@ -24,7 +24,7 @@ class Auth extends BaseRestServiceTB {
 	protected $annuaire;
 
 	/** Bibliothèque SSO */
-	protected $lib;
+	protected $libSSO;
 
 	public function __construct($config, $annuaire) {
 		parent::__construct($config);
@@ -45,7 +45,7 @@ class Auth extends BaseRestServiceTB {
 		// lib annuaire
 		$this->annuaire = $annuaire;
 		// lib SSO - raccourci
-		$this->lib = $this->annuaire->getSSO();
+		$this->libSSO = $this->annuaire->getSSO();
 	}
 
 	/**
@@ -75,13 +75,13 @@ class Auth extends BaseRestServiceTB {
 						"partner" => "nom du partenaire (ex: plantnet)"
 					),
 					"alias" => $uri . "login",
-					"description" => "connexion avec login et mot de passe; renvoie un jeton et un cookie " . $this->lib->getNomCookie()
+					"description" => "connexion avec login et mot de passe; renvoie un jeton et un cookie " . $this->libSSO->getNomCookie()
 				),
 				'deconnexion' => array(
 					"uri" => $uri . "deconnexion",
 					"parametres" => null,
 					"alias" => $uri . "logout",
-					"description" => "déconnexion; renvoie un jeton null et supprime le cookie " . $this->lib->getNomCookie()
+					"description" => "déconnexion; renvoie un jeton null et supprime le cookie " . $this->libSSO->getNomCookie()
 				),
 				'identite' => array(
 					"uri" => $uri . "identite",
@@ -93,7 +93,7 @@ class Auth extends BaseRestServiceTB {
 						$uri . "rafraichir",
 						$uri . "refresh"
 					),
-					"description" => "confirme l'authentification et la session; rafraîchit le jeton fourni (dans le cookie " . $this->lib->getNomCookie() . ", le header Authorization ou en paramètre)"
+					"description" => "confirme l'authentification et la session; rafraîchit le jeton fourni (dans le cookie " . $this->libSSO->getNomCookie() . ", le header Authorization ou en paramètre)"
 				),
 				'verifierjeton' => array(
 					"uri" => $uri . "verifierjeton",
@@ -247,7 +247,7 @@ class Auth extends BaseRestServiceTB {
 		// infos partenaire
 		$infos = array_merge($infos, $infosPartenaire);
 		// création du jeton
-		$jwt = $this->lib->creerJeton($login, $infos);
+		$jwt = $this->libSSO->creerJeton($login, $infos);
 		// création du cookie
 		$this->creerCookie($jwt);
 		// redirection si demandée - se charge de sortir du script en cas de succès
@@ -256,8 +256,8 @@ class Auth extends BaseRestServiceTB {
 		$this->sendJson(array(
 			"session" => true,
 			"token" => $jwt,
-			"duration" => intval($this->lib->getDureeJeton()),
-			"token_id" => $this->lib->getNomCookie(),
+			"duration" => intval($this->libSSO->getDureeJeton()),
+			"token_id" => $this->libSSO->getNomCookie(),
 			"last_modif" => $infos['dateDerniereModif']
 		));
 	}
@@ -278,7 +278,7 @@ class Auth extends BaseRestServiceTB {
 		$this->sendJson(array(
 				"session" => false,
 				"token" => $jwt,
-				"token_id" => $this->lib->getNomCookie()
+				"token_id" => $this->libSSO->getNomCookie()
 		));
 	}
 
@@ -296,7 +296,7 @@ class Auth extends BaseRestServiceTB {
 	 */
 	protected function identite() {
 		$erreur = '';
-		$jetonRetour = $this->lib->identite($erreur);
+		$jetonRetour = $this->libSSO->identite($erreur);
 		// redirection si demandée - se charge de sortir du script en cas de succès
 		$this->rediriger($jetonRetour);
 		// renvoi jeton
@@ -306,8 +306,8 @@ class Auth extends BaseRestServiceTB {
 			$this->sendJson(array(
 					"session" => true,
 					"token" => $jetonRetour,
-					"duration" => intval($this->lib->getDureeJeton()),
-					"token_id" => $this->lib->getNomCookie()
+					"duration" => intval($this->libSSO->getDureeJeton()),
+					"token_id" => $this->libSSO->getNomCookie()
 			));
 		}
 	}
@@ -345,7 +345,7 @@ class Auth extends BaseRestServiceTB {
 	protected function verifierJeton() {
 		// vérifie que le jeton provient bien d'ici,
 		// et qu'il est encore valide (date)
-		$jwt = $this->lib->lireJetonDansHeader();
+		$jwt = $this->libSSO->lireJetonDansHeader();
 		if ($jwt == null) {
 			$jwt = $this->getParam('token');
 			if ($jwt == '') {
@@ -353,7 +353,7 @@ class Auth extends BaseRestServiceTB {
 			}
 		}
 		try {
-			$this->lib->decoderJeton($jwt);
+			$this->libSSO->decoderJeton($jwt);
 		} catch (Exception $e) {
 			$this->sendError($e->getMessage());
 			exit;
@@ -368,7 +368,7 @@ class Auth extends BaseRestServiceTB {
 	 * @param string $valeur le contenu du cookie (de préférence un jeton JWT)
 	 */
 	protected function creerCookie($valeur) {
-		setcookie($this->lib->getNomCookie(), $valeur, time() + $this->dureeCookie, '/', $this->domaineCookie, $this->cookieSecurise);
+		setcookie($this->libSSO->getNomCookie(), $valeur, time() + $this->dureeCookie, '/', $this->domaineCookie, $this->cookieSecurise);
 	}
 
 	/**
@@ -379,10 +379,10 @@ class Auth extends BaseRestServiceTB {
 	 * @param string $valeur la valeur du cookie, par défaut ""
 	 */
 	protected function detruireCookie() {
-		setcookie($this->lib->getNomCookie(), "", -1, '/', $this->domaineCookie, $this->cookieSecurise);
+		setcookie($this->libSSO->getNomCookie(), "", -1, '/', $this->domaineCookie, $this->cookieSecurise);
 		// mode transition: supprime l'ancien cookie posé sur "www.tela-botanica.org" sans quoi on ne peut plus se déconnecter!
 		// @TODO supprimer au bout d'un moment
-		setcookie($this->lib->getNomCookie(), "", -1, '/', null, $this->cookieSecurise);
+		setcookie($this->libSSO->getNomCookie(), "", -1, '/', null, $this->cookieSecurise);
 	}
 
 	/**

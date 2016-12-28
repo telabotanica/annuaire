@@ -220,7 +220,9 @@ class SSO {
 	 * Reçoit un jeton JWT, et s'il est non-vide ("sub" != null), lui redonne
 	 * une période de validité de $this->dureeJeton; si $ignorerExpiration
 	 * vaut true, rafraîchira le jeton même s'il a expiré
-	 * (attention à ne pas appeler cette méthode n'importe comment !);
+	 * (attention à ne pas appeler cette méthode n'importe comment : on ne doit
+	 * pas rafraîchir un jeton expiré si l'utilisateur n'est pas en possession
+	 * d'un cookie, par exemple);
 	 * jette une exception si le jeton est vide, mal signé ou autre erreur,
 	 * ou s'il a expiré et que $ignorerExpiration est différent de true
 	 * 

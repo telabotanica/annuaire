@@ -102,9 +102,9 @@ class AnnuaireService extends BaseRestServiceTB {
 							default:
 								$this->usage();
 						}
-						break;
 					}
 				}
+				break;
 			default:
 				$this->usage();
 		}
