@@ -230,6 +230,9 @@ class Auth extends BaseRestServiceTB {
 			// si la redirection n'a pas eu lieu
 			$this->sendError("authentication failed", 401);
 		}
+		// une fois l'accès obtenu, si le "login" fourni n'était pas une adresse
+		// courriel, obtenir l'adresse correspondant à ce login
+		$login = $this->annuaire->verifierCourrielOuConvertirDepuisLogin($login);
 		// infos utilisateur
 		$infos = $this->annuaire->infosParCourriels($login);
 		// getIdentiteParCourriel retourne toujours le courriel comme clef de tableau en lowercase

@@ -164,10 +164,29 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 	}
 
 	/**
+	 * Si $courrielOuLogin est une adresse courriel, la retourne; sinon
+	 * considère qu'il s'agit d'un login et retourne le courriel correspondant
+	 * (fortement dépendant de l'implémentation, qui peut ne pas gérer la notion
+	 * de "login" autre qu'une adresse courriel)
+	 * 
+	 * @param string $courrielOuLogin une adresse courriel ou un login
+	 *	      (identifiant utilisateur)
+	 * @return string l'adresse courriel correspondant à l'utilisateur désigné
+	 */
+	public function verifierCourrielOuConvertirDepuisLogin($courrielOuLogin) {
+		$courriel = $courrielOuLogin;
+		if (strpos($courrielOuLogin, '@') === false) {
+			$courriel = $this->courrielParLogin($courrielOuLogin);
+		}
+		return $courriel;
+	}
+
+	/**
 	 * Méthodes de l'interface ne donnant pas lieu à un traitement générique
 	 */
 	//public abstract function idParCourriel($courriel);
 	//public abstract function courrielParId($id);
+	//public abstract function courrielParLogin($login);
 	//public abstract function getDateDerniereModifProfil($id);
 	//public abstract function identificationCourrielMdp($courriel, $mdp);
 	//public abstract function identificationCourrielMdpHache($courriel, $mdpHache);

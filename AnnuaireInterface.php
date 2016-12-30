@@ -10,6 +10,8 @@ interface AnnuaireInterface {
 
 	public function idParCourriel($courriel);
 	public function courrielParId($id);
+	public function courrielParLogin($login);
+	public function verifierCourrielOuConvertirDepuisLogin($courrielOuLogin);
 	public function getDateDerniereModifProfil($id);
 	public function inscrireUtilisateur($donneesProfil);
 	public function getAllRoles();
