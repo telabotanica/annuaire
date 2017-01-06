@@ -41,6 +41,11 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 
 	/**
 	 * Retourne l'adresse email de l'utilisateur WP en fonction de son ID
+	 * 
+	 * @WARNING gère le cas où l'adresse email de l'utilisateur n'est pas
+	 * renseignée, mais où c'est son "login" qui contient son adresse email; ne
+	 * devrait pas se produire avec une base d'utilisateurs propre; mécanisme
+	 * à supprimer dès que possible
 	 */
 	public function courrielParId($id) {
 		$user = get_user_by('ID', $id);
@@ -56,6 +61,20 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 				$retour = $user->user_login;
 			}
 			return $retour;
+		}
+	}
+
+	/**
+	 * Retourne l'adresse email de l'utilisateur WP en fonction de son login
+	 * (colonne "user_login")
+	 */
+	public function courrielParLogin($login) {
+		$user = get_user_by('login', $login);
+	
+		if ($user === false) {
+			return false;
+		} else {
+			return $user->user_email;
 		}
 	}
 
@@ -83,12 +102,24 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	/**
 	 * Retourne true si l'utilisateur ayant l'adresse courriel $courriel a un
 	 * mot de passe égal à $mdp, false sinon
+	 * 
+	 * Gère également la connexion par nom d'utilisateur : si $courriel ne
+	 * contient pas le caractère "@", tentera de trouver l'utilisateur ayant
+	 * pour "user_login" $courriel
+	 * 
 	 * Compatible avec les mots de passe hachés en MD5 (ancienne méthode) ou
-	 * aec PHPass (nouvelle méthode); met à jour le haché si besoin :
+	 * avec PHPass (nouvelle méthode); met à jour le haché si besoin :
 	 * https://developer.wordpress.org/reference/functions/wp_check_password/
+	 * 
 	 */
 	public function identificationCourrielMdp($courriel, $mdp) {
-		$user = get_user_by('email', $courriel);
+		// détection : courriel ou nom d'utilisateur
+		if (strpos($courriel, '@') !== false) {
+			$user = get_user_by('email', $courriel);
+		} else {
+			// tentative de connexion par le nom d'utilisateur
+			$user = get_user_by('login', $courriel);
+		}
 		if ($user) {
 			// met à jour le hash si besoin
 			return wp_check_password($mdp, $user->data->user_pass, $user->ID);

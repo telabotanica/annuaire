@@ -62,6 +62,14 @@ class Annuaire implements AnnuaireInterface {
 		return $this->adapter->courrielParId($id);
 	}
 
+	public function courrielParLogin($login) {
+		return $this->adapter->courrielParLogin($login);
+	}
+
+	public function verifierCourrielOuConvertirDepuisLogin($courrielOuLogin) {
+		return $this->adapter->verifierCourrielOuConvertirDepuisLogin($courrielOuLogin);
+	}
+
 	public function getDateDerniereModifProfil($id) {
 		return $this->adapter->getDateDerniereModifProfil($id);
 	}
