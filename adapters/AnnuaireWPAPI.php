@@ -11,14 +11,9 @@ require_once __DIR__ . '/../AnnuaireAdapter.php';
  */
 class AnnuaireWPAPI extends AnnuaireAdapter {
 
-	/** Préfixe des tables Wordpress */
-	protected $prefixe;
-
 	public function __construct($config, $SSO) {
 		parent::__construct($config, $SSO);
 
-		// préfixe de tables pour les requêtes "en dur" @TODO essayer de s'en débarrasser
-		$this->prefixe = $this->config['adapters']['AnnuaireWPAPI']['prefixe_tables'];
 		// inclusion de l'API
 		$cheminWordpress = $this->config['adapters']['AnnuaireWPAPI']['chemin_wp'];
 		require_once $cheminWordpress . "/wp-load.php";
@@ -89,7 +84,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 */
 	public function getDateDerniereModifProfil($id) {
 		global $wpdb;
-		$ddm = $wpdb->get_var("SELECT MAX(last_updated) as date FROM {$this->prefixe}bp_xprofile_data WHERE user_id = $id");
+		$ddm = $wpdb->get_var("SELECT MAX(last_updated) as date FROM {$wpdb->prefix}bp_xprofile_data WHERE user_id = $id");
 
 		if ($ddm === false) {
 			return 0; // @TODO 0 pour rester compatible ou false pour indiquer que /i ?
@@ -241,6 +236,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		$infos['_roles'] = array_keys((array) $utilisateur->caps);
 
 		if ($usermeta) {
+			global $wpdb;
 			$infos['_meta'] = array();
 			// 2) métadonnées
 			$meta = get_user_meta($id);
@@ -251,8 +247,8 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 					"first_name" => $meta['first_name'][0],
 					"last_name" => $meta['last_name'][0],
 					"description" => $meta['description'][0],
-					"{$this->prefixe}capabilities" => (! empty($meta['test_capabilities']) ? $meta['test_capabilities'][0] : ''),
-					"{$this->prefixe}user_level" => (! empty($meta['test_user_level']) ? $meta['test_user_level'][0] : ''),
+					"{$wpdb->prefix}capabilities" => (! empty($meta['test_capabilities']) ? $meta['test_capabilities'][0] : ''),
+					"{$wpdb->prefix}user_level" => (! empty($meta['test_user_level']) ? $meta['test_user_level'][0] : ''),
 					"last_activity" => (! empty($meta['last_activity'][0]) ? $meta['last_activity'][0] : 0)
 				);
 				$infos['_meta'] = $metaAGarder;
@@ -266,8 +262,8 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			$infos['_xprofile'] = array();
 			// 3) profil étendu
 			$xprofile = $wpdb->get_results("SELECT xd.user_id, xf.name, xd.value "
-				. "FROM {$this->prefixe}bp_xprofile_fields xf "
-				. "LEFT JOIN {$this->prefixe}bp_xprofile_data xd ON xd.field_id = xf.id "
+				. "FROM {$wpdb->prefix}bp_xprofile_fields xf "
+				. "LEFT JOIN {$wpdb->prefix}bp_xprofile_data xd ON xd.field_id = xf.id "
 				. "WHERE xd.user_id = $id"
 			);
 			if ($xprofile !== false) {

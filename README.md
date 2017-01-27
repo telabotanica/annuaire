@@ -22,7 +22,6 @@ cp clef-auth.defaut.ini clef-auth.ini
  - **adapters**
   - **AnnuaireWPAPI**
     - **chemin_wp** : chemin de l'installation de Wordpress (ex: "/home/user/www/test")
-    - **prefixe_tables** : préfixe des tables Wordpress pour l'installation ciblée (ex: "wp_")
   - **auth**
     - **mdp_magique_hache** : si un mot de passe haché en MD5 est placé ici, ce mot de passe permettra d'acéder à tous les comptes
 
