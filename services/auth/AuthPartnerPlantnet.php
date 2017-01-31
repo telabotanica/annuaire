@@ -10,7 +10,7 @@ class AuthPartnerPlantnet extends AuthPartner {
 	public function verifierAcces($login, $password) {
 		$login = urlencode($login); // pour les espaces dans le nom d'utilisateur
 		$password = urlencode($password);
-		$url = "http://identify.plantnet-project.org/api/security/token/create?_username=$login&_password=$password";
+		$url = "https://identify.plantnet-project.org/api/security/token/create?_username=$login&_password=$password";
 
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
