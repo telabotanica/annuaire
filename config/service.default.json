@@ -1,8 +1,8 @@
 // pseudo-JSON : les lignes commençant par // sont ignorées
 {
 	"domain_root": "localhost",
-	"base_uri": "/service:annuaire-ng:",
-	"first_resource_separator": "/",
+	"base_uri": "/service:annuaire-ng",
+	"first_resource_separator": ":",
 	"auth": {
 		// si true, refusera toute connexion non-HTTPS
 		"forcer_ssl": false,
