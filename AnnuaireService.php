@@ -550,7 +550,7 @@ class AnnuaireService extends BaseRestServiceTB {
 		if (count($this->resources) < 1) {
 			$this->sendError("élément d'URL manquant");
 		}
-		$unOuPlusieursCourriels = array_shift($this->resources);
+		$unOuPlusieursCourriels = trim(array_shift($this->resources));
 		$unOuPlusieursCourriels = explode(',', $unOuPlusieursCourriels);
 		// les courriels doivent contenir un arrobase @TODO utile ?
 		$unOuPlusieursCourriels = array_filter($unOuPlusieursCourriels, function($v) {

@@ -149,6 +149,7 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 
 		$infos = array();
 		foreach ($unOuPlusieursCourriels as $courriel) {
+			$courriel = trim($courriel);
 			$infosUtilisateur = null;
 			try {
 				$infosUtilisateur = $this->infosUtilisateurParCourriel($courriel);
