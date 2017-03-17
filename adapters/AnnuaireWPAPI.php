@@ -325,6 +325,13 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			"avatar" => $infos['avatar_url'],
 			"groupes" => array()
 		);
+		// Le prénom et le nom sont maintenant plus souvent dans _xprofile (profil BP) que dans WP
+		if (! empty($infos['_xprofile']['Prénom'])) {
+			$retour['prenom'] = $infos['_xprofile']['Prénom'];
+		}
+		if (! empty($infos['_xprofile']['Nom'])) {
+			$retour['nom'] = $infos['_xprofile']['Nom'];
+		}
 		// rôles @TODO valider la formalisation des permissions
 		$retour['permissions'] = $infos['_roles'];
 		// groupes @TODO valider la formalisation des permissions
