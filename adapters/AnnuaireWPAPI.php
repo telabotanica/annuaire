@@ -310,30 +310,51 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 * @param infos Array infos utilisateur produites par infosUtilisateur()
 	 */
 	protected function formaterInfosUtilisateur(array $infos) {
-		//var_dump($infos);
-		$pseudo = (! empty($infos['_meta']['nickname'])) ? $infos['_meta']['nickname'] : null;
+		// Le prénom et le nom sont définis dans _xprofile (profil BP); ils sont
+		// censés être répercutés dans WP usermeta (first_name & last_name) mais
+		// si la synchronisation échoue pour une raison X, on surcharge ici
+		// @TODO envisager d'abandonner cette stratégie
+		// @WARNING ne pas modifier la config du profil BP (noms des champs)
+		$prenom = $infos['_meta']['first_name'];
+		$nom = $infos['_meta']['last_name'];
+		if (! empty($infos['_xprofile']['Prénom'])) {
+			$prenom = $infos['_xprofile']['Prénom'];
+		}
+		if (! empty($infos['_xprofile']['Nom'])) {
+			$nom = $infos['_xprofile']['Nom'];
+		}
+
 		$retour = array(
 			"id" => $infos['ID'],
 			// le courriel ne devrait jamais être exposé sans être déjà connu
 			// (identité-par-courriel) ou si l'on n'est pas admin
 			//"courriel" => $infos['user_email'], // @TODO vérifier que c'est rétrocompatible
-			"prenom" => $infos['_meta']['first_name'],
-			"nom" => $infos['_meta']['last_name'],
-			"pseudo" => $pseudo,
-			"pseudoUtilise" => ($pseudo == $infos['display_name']), // obsolète
+
+			// "prenom", "nom", "pseudo" et "pseudoUtilise" devraient
+			// disparaître à terme des infos publiques au profit de "intitule",
+			// et ne s'afficher que si l'utilisateur est admin ou demande son
+			// propre profil
+			"prenom" => $prenom, 
+			"nom" => $nom,
+			// Le "pseudonyme" est le "display_name" de WP; dans le monde WP il
+			// n'est pas forcément égal au "nickname", mais dans le monde TB on
+			// souhaite pousser à l'utilisation d'un champ unique pour représenter
+			// l'utilisateur, et éviter d'avoir un pseudo différent du display_name
+			"pseudo" => $infos['display_name'],
+			"pseudoUtilise" => true, // rétrocompat', obsolète
+
+			// l'intitulé doit toujours rester le "display_name" pour que
+			// l'affichage soit cohérent entre WP (qui affiche toujours celui-ci)
+			// et les applications externes (qui devraient toutes supporter le
+			// champ "intitule")
 			"intitule" => $infos['display_name'],
 			"avatar" => $infos['avatar_url'],
 			"groupes" => array()
 		);
-		// Le prénom et le nom sont maintenant plus souvent dans _xprofile (profil BP) que dans WP
-		if (! empty($infos['_xprofile']['Prénom'])) {
-			$retour['prenom'] = $infos['_xprofile']['Prénom'];
-		}
-		if (! empty($infos['_xprofile']['Nom'])) {
-			$retour['nom'] = $infos['_xprofile']['Nom'];
-		}
+
 		// rôles @TODO valider la formalisation des permissions
 		$retour['permissions'] = $infos['_roles'];
+
 		// groupes @TODO valider la formalisation des permissions
 		foreach($infos['_groups'] as $groupe) {
 			$niveau = '';
