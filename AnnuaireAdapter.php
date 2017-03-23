@@ -108,6 +108,9 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 	// triviale, +1 requête : à redéfinir si les performances sont trop faibles
 	protected function infosUtilisateurParCourriel($courriel) {
 		$id = $this->idParCourriel($courriel);
+		if ($id === false) {
+			throw new Exception("Impossible de trouver l'utilisateur [$courriel]");
+		}
 		$infosParId = $this->infosUtilisateurParId($id);
 
 		return $infosParId;
@@ -130,7 +133,13 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 				$infosUtilisateur = $this->formaterInfosUtilisateur($infosUtilisateur);
 				$infosUtilisateur['nomWiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
 			} catch (Exception $e) {
-				// on échoue silencieusement pour ne pas casser la boucle
+				// à moins qu'on ait demandé un seul utilisateur, on échoue
+				// silencieusement pour ne pas casser la boucle
+				if (count($unOuPlusieursIds) == 1) {
+					throw $e;
+				} else {
+					continue;
+				}
 			}
 			$infos[$id] = $infosUtilisateur;
 		}
@@ -157,7 +166,13 @@ abstract class AnnuaireAdapter implements AnnuaireInterface {
 				$infosUtilisateur = $this->formaterInfosUtilisateur($infosUtilisateur);
 				$infosUtilisateur['nomWiki'] = $this->formaterNomWiki($infosUtilisateur['intitule']);
 			} catch (Exception $e) {
-				// on échoue silencieusement pour ne pas casser la boucle
+				// à moins qu'on ait demandé un seul utilisateur, on échoue
+				// silencieusement pour ne pas casser la boucle
+				if (count($unOuPlusieursCourriels) == 1) {
+					throw $e;
+				} else {
+					continue;
+				}
 			}
 			$infos[$courriel] = $infosUtilisateur;
 		}

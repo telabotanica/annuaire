@@ -524,19 +524,21 @@ class AnnuaireService extends BaseRestServiceTB {
 			// retour normal en JSON
 			$retour = array();
 			foreach($infos as $email => $i) {
-				$retour[$email] = $this->sousTableau($i, array(
-					"id",
-					"courriel",
-					"prenom",
-					"nom",
-					"pseudo",
-					"pseudoUtilise", // obsolète
-					"intitule",
-					"nomWiki",
-					"avatar",
-					"permissions",
-					"groupes"
-				));
+				if ($i != null) {
+					$retour[$email] = $this->sousTableau($i, array(
+						"id",
+						"courriel",
+						"prenom",
+						"nom",
+						"pseudo",
+						"pseudoUtilise", // obsolète
+						"intitule",
+						"nomWiki",
+						"avatar",
+						"permissions",
+						"groupes"
+					));
+				}
 			}
 			$this->sendJson($retour);
 		}

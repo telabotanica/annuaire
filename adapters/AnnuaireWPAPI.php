@@ -165,13 +165,14 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	public function inscrireUtilisateur($donneesProfil, $id=null) {
 
 		$donnees = array(
-			'user_login' =>  $donneesProfil['pseudo'],
-			'user_nicename' =>  $donneesProfil['pseudo'],
-			'first_name' =>  $donneesProfil['prenom'],
-			'last_name' =>  $donneesProfil['nom'],
-			'user_email' =>  $donneesProfil['email'],
-			'user_registered' =>  date('Y-m-d H:i:s'),
-			'user_pass'  =>  isset($donneesProfil['mdp']) ? $donneesProfil['mdp'] : null
+			'user_login' => $donneesProfil['pseudo'],
+			'user_nicename' => $donneesProfil['pseudo'], // automatiquement slugifié ? sinon, utiliser sanitize_user()
+			'nickname' => $donneesProfil['pseudo'],
+			'first_name' => $donneesProfil['prenom'],
+			'last_name' => $donneesProfil['nom'],
+			'user_email' => $donneesProfil['email'],
+			'user_registered' => date('Y-m-d H:i:s'),
+			'user_pass' => isset($donneesProfil['mdp']) ? $donneesProfil['mdp'] : null
 		);
 		// pour une mise à jour :
 		if ($id !== null) {
@@ -220,6 +221,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 */
 	protected function infosUtilisateur($id, $usermeta=true, $xprofile=true, $groups=true) {
 
+		global $wpdb;
 		$infos = array();
 
 		// 1) utilisateur
@@ -227,6 +229,16 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		if ($utilisateur === false) {
 			throw new Exception("Impossible de trouver l'utilisateur [$id]");
 		}
+		// le compte est-il activé
+		// @TODO trouver un meilleur moyende le vérifer
+		$enAttente = $wpdb->get_results("SELECT signup_id "
+			. "FROM {$wpdb->prefix}signups "
+			. "WHERE active = 0 AND user_email = '{$utilisateur->data->user_email}'"
+		);
+		if (! empty($enAttente)) {
+			throw new Exception("Le compte est en attente d'activation");
+		}
+		
 		// garnir les infos
 		$infos = (array) $utilisateur->data;
 		// choper l'URL de l'avatar
@@ -236,7 +248,6 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		$infos['_roles'] = array_keys((array) $utilisateur->caps);
 
 		if ($usermeta) {
-			global $wpdb;
 			$infos['_meta'] = array();
 			// 2) métadonnées
 			$meta = get_user_meta($id);
@@ -258,7 +269,6 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		// @TODO obtenir ça avec l'API BP mais c'est une telle bousasse atomique
 		// qu'il n'y a pas une p*tain de fonction qui fasse ça clairement :(
 		if ($xprofile) {
-			global $wpdb;
 			$infos['_xprofile'] = array();
 			// 3) profil étendu
 			$xprofile = $wpdb->get_results("SELECT xd.user_id, xf.name, xd.value "
