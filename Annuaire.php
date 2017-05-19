@@ -125,7 +125,7 @@ class Annuaire implements AnnuaireInterface {
 		return $this->adapter->infosParCourriels($unOuPlusieursCourriels);
 	}
 
-	public function envoyerMessage($destinataire, $sujet, $contenu) {
-		return $this->adapter->envoyerMessage($destinataire, $sujet, $contenu);
+	public function envoyerMessage($destinataire, $sujet, $contenu, $expediteur=null) {
+		return $this->adapter->envoyerMessage($destinataire, $sujet, $contenu, $expediteur);
 	}
 }

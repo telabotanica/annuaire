@@ -392,25 +392,40 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 	 * @param type $sujet sujet du message
 	 * @param type $contenu contenu du message, accepte le HTML et le texte simple
 	 */
-	public function envoyerMessage($destinataires, $sujet, $contenu) {
+	public function envoyerMessage($destinataires, $sujet, $contenu, $expediteur=null) {
 		// utilisation du service d'authentification SSO pour détecter
 		// l'utilisateur en cours
 		$utilisateur = $this->SSO->getUtilisateur();
 		//var_dump($utilisateur); exit;
-		if (empty($utilisateur['sub'])) {
-			throw new Exception("Vous devez être identifié pour poster un message");
+
+		// L'expéditeur est-il identifié par un jeton SSO ?
+		if (! empty($utilisateur['sub'])) {
+			$adresseExpediteur = $utilisateur['sub'];
+			$nomExpediteur = $utilisateur['intitule'];
+		} else {
+			// La machine expéditrice est-elle autorisée ?
+			if ($this->machineAutorisee()) {
+				if ($expediteur) {
+						$adresseExpediteur = $expediteur;
+						$nomExpediteur = $expediteur;
+				} else {
+					throw new Exception("Vous devez être identifié ou désigner l'expéditeur dans [utilisateur_courriel] pour poster un message");
+				}
+			} else {
+				throw new Exception("Vous devez être identifié pour poster un message");
+			}
 		}
 		$masquerExpediteur = $this->config['adapters']['AnnuaireWPAPI']['messages']['masquer_expediteur'];
-		$expediteur = $utilisateur['sub'];
-		if (empty($expediteur) || $masquerExpediteur) {
-			$expediteur = $this->config['adapters']['AnnuaireWPAPI']['messages']['expediteur'];
+		
+		if (empty($adresseExpediteur) || $masquerExpediteur) {
+			$adresseExpediteur = $this->config['adapters']['AnnuaireWPAPI']['messages']['expediteur'];
+			$nomExpediteur = 'anonyme';
 		}
-		$nomExpediteur = $utilisateur['intitule'];
 
 		// formatage du message
 		$mail = new PHPMailer();
 
-		$mail->setFrom($expediteur, "$nomExpediteur via Tela Botanica");
+		$mail->setFrom($adresseExpediteur, "$nomExpediteur via Tela Botanica");
 		$sujet = trim($sujet);
 		if (empty($sujet)) {
 			// sujet par défaut
@@ -452,5 +467,19 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			throw new Exception('Erreur PHPMailer: ' . $mail->ErrorInfo);
 		}
 		return true;
+	}
+
+	/**
+	 * Retourne true si l'IP du client est dans la liste "ips_autorisees" de la
+	 * configuration de l'adapteur
+	 */
+	protected function machineAutorisee() {
+		$retour = false;
+		$ip = $_SERVER['REMOTE_ADDR'];
+		$ips = $sujet = $this->config['adapters']['AnnuaireWPAPI']['ips_autorisees'];
+		if (is_array($ips)) {
+			$retour = in_array($ip, $ips);
+		}
+		return $retour;
 	}
 }

@@ -11,7 +11,12 @@
 				// l'entête From: des emails envoyés par le service de messagerie
 				"expediteur": "no-reply@tela-botanica.org",
 				"sujet_par_defaut": "Message via Tela Botanica"
-			}
+			},
+			// ces clients n'ont pas besoin de jeton SSO pour accéder à certains
+			// service, par ex: /message
+			"ips_autorisees": [
+				"127.0.0.1"
+			]
 		},
 		"AnnuaireWP": {
 			"bdd": {

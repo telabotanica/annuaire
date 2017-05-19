@@ -161,9 +161,12 @@ class AnnuaireService extends BaseRestServiceTB {
 		if (empty($sujet)) {
 			$this->sendError("Parametre 'sujet_message' manquant");
 		}
+		// expéditeur : si le service est utilisé par un proxy (ex: CelMessage),
+		// l'expéditeur peut être fourni manuellement
+		$expediteur = $this->getParam('utilisateur_courriel');
 
 		// envoi
-		$retour = $this->lib->envoyerMessage($destinataire, $sujet, $contenu);
+		$retour = $this->lib->envoyerMessage($destinataire, $sujet, $contenu, $expediteur);
 		if ($retour) {
 			if (! empty($redirect)) {
 				// rétrocompatibilité à deux ronds
