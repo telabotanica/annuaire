@@ -173,7 +173,9 @@ class AnnuaireService extends BaseRestServiceTB {
 				header('Location: ' . $redirect);
 				exit;
 			} else {
-				$this->sendJson("OK");
+				$this->sendJson(array(
+					"message" => "Votre message a été envoyé"
+				));
 			}
 		} else {
 			// ne devrait jamais se produire, la lib est censée jeter une
