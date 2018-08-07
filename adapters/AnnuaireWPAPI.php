@@ -432,6 +432,8 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			$sujet = $this->config['adapters']['AnnuaireWPAPI']['messages']['sujet_par_defaut'];
 		}
 		$mail->Subject = $sujet;
+		// nettoyage
+		$contenu = stripslashes($contenu);
 		// le texte est-il en HTML ?
 		$mail->Body = $contenu;
 		$estEnHTML = ($contenu != strip_tags($contenu));
