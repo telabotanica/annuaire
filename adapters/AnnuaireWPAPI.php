@@ -295,15 +295,17 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 				if ($groupes !== false) {
 					foreach ($groupes as $groupe) {
 						// infos du groupe (nom et slug)
-						$bp_group = groups_get_group(array('group_id' => $groupe->id ));
+						$bp_group = groups_get_group($groupe->group_id);
 						// on ne garde que certaines infos @TODO vérifier qu'on n'oublie rien
-						$infos['_groups'][$groupe->id] = array(
-							"id" => $groupe->id,
-							"slug" => $bp_group->slug,
-							"name" => $bp_group->name,
-							"is_admin" => $groupe->is_admin,
-							"is_mod" => $groupe->is_mod
-						);
+						if ($bp_group->id) {
+							$infos['_groups'][$bp_group->id] = array(
+								"id" => $bp_group->id,
+								"slug" => $bp_group->slug,
+								"name" => $bp_group->name,
+								"is_admin" => $groupe->is_admin,
+								"is_mod" => $groupe->is_mod
+							);
+						}
 					}
 				}
 			}
@@ -373,7 +375,7 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 			} else if ($groupe['is_mod']) {
 				$niveau = 'mod';
 			}
-			$retour['groupes'][$groupe['id']] = $niveau;
+			$retour['groupes']['projet:' . $groupe['id']] = $niveau;
 		}
 
 		return $retour;
