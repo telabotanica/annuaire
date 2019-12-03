@@ -2,7 +2,14 @@
 Nouvelle version de l'annuaire (SSO) Tela Botanica basée sur Wordpress
 
 ## installation
-composer install --no-dev
+`composer install --no-dev`
+
+## docker
+`docker-compose up`
+
+## default mysql data
+Add your favorite user info to annuaire.sql and run:
+`mysql -u annuaire -p --host=0.0.0.0 --port=13306 annuaire < annuaire.sql`
 
 ## configuration
 ```

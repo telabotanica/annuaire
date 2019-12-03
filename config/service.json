@@ -1,0 +1,18 @@
+// pseudo-JSON : les lignes commençant par // sont ignorées
+{
+	"domain_root": "localhost",
+	"base_uri": "/service:annuaire",
+	"first_resource_separator": ":",
+	"auth": {
+		// si true, refusera toute connexion non-HTTPS
+		"forcer_ssl": false,
+		// NOTE: le nom_cookie est défini dans config.json
+		"duree_cookie": 31536000,
+		// utiliser 'tela-botanica.org' ou '.tela-botanica.org' pour lever la restriction sur les sous-domaines
+		"domaine_cookie": "localhost",
+		// si true, Curl ne vérifiera pas l'authenticité de l'hôte (SSL de Sequoia trop vieux)
+		"curl_soft_ssl": false,
+		// si forcer_ssl est false et qu'on accède au service en HTTP, mettre à false pour obtenir le cookie
+		"cookie_securise": false
+	}
+}

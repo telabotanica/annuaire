@@ -1,0 +1,41 @@
+// pseudo-JSON : les lignes commençant par // sont ignorées
+{
+	"adapter": "AnnuaireWP",
+	"adapters": {
+		"AnnuaireWPAPI": {
+			"chemin_wp": "/home/stuff/www/wordpress",
+			"messages": {
+				// si false, le véritable expéditeur sera indiqué s'il est connu
+				"masquer_expediteur": true,
+				// si masquer_expediteur est true, adresse à placer dans
+				// l'entête From: des emails envoyés par le service de messagerie
+				"expediteur": "no-reply@tela-botanica.org",
+				"sujet_par_defaut": "Message via Tela Botanica"
+			},
+			// ces clients n'ont pas besoin de jeton SSO pour accéder à certains
+			// service, par ex: /message
+			"ips_autorisees": [
+				"127.0.0.1"
+			]
+		},
+		"AnnuaireWP": {
+			"bdd": {
+				// Protocole pour PDO
+				"protocole": "mysql",
+				"hote": "db",
+				"port": 3306,
+				// Nom de la base de données
+				"base": "annuaire",
+				"prefixe": "",
+				"login": "annuaire",
+				"mdp": "annuaire"
+			}
+		}
+	},
+	"auth": {
+		// mot de passe universel, haché en MD5 (attention à ne pas laisser fuiter !!)  - laisser vide ('') pour désactiver
+		"mdp_magique_hache": "",
+		"nom_cookie": "tb_auth_local",
+		"duree_jeton": 900
+	}
+}
