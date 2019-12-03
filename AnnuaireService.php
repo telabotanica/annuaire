@@ -110,6 +110,11 @@ class AnnuaireService extends BaseRestServiceTB {
 		}
 	}
 
+	protected function options() {
+		// réponse positive par défaut;
+		http_response_code(200);
+	}
+
 	// https://.../service:annuaire:auth/...
 	protected function auth() {
 		// service d'authentification SSO
