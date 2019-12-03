@@ -69,6 +69,29 @@ class AnnuaireWP extends AnnuaireAdapter {
 		}
 	}
 
+	/**
+	 * Retourne l'adresse email de l'utilisateur WP en fonction de son login
+	 * (colonne "user_login")
+	 */
+	public function courrielParLogin($login) {
+		// protection
+		$loginP = $this->bdd->quote($login);
+		// requête
+		$q = "SELECT user_email FROM {$this->prefixe}users "
+			. "WHERE user_login = $loginP "
+			. "AND user_status != 1 "
+			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key')"
+		;
+		$r = $this->bdd->query($q);
+		$d = $r->fetch();
+
+		if ($d === false) {
+			return false;
+		} else {
+			return $d['user_email'];
+		}
+	}
+
 	// @TODO A TESTER
 	public function getDateDerniereModifProfil($id) {
 		// protection
