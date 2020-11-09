@@ -8,8 +8,8 @@ Nouvelle version de l'annuaire (SSO) Tela Botanica basée sur Wordpress
 `docker-compose up`
 
 ## default mysql data
-Add your favorite user info to annuaire.sql and run:
-`mysql -u annuaire -p --host=0.0.0.0 --port=13306 annuaire < annuaire.sql`
+Add your favorite user info to annuaire.sql and run locally:
+`mysql --host=0.0.0.0 --port=13306 -u annuaire -p annuaire < annuaire.sql`
 
 ## configuration
 ```
@@ -45,3 +45,7 @@ Les services **utilisateur** et **auth** renvoient la liste des rôles affectés
 Pour cumuler plusieurs rôles (nécessaire pour gérer les permissions SSO), nécessite le plugin Wordpress "Multiple Roles" : https://fr.wordpress.org/plugins/multiple-roles/
 
 Charge à l'administrateur WP d'ajouter des rôles.
+
+## login
+http://localhost:8080/service:annuaire:auth/login?login=your@email&password=mdp 
+
