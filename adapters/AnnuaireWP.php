@@ -37,7 +37,7 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$q = "SELECT ID FROM {$this->prefixe}users "
 			. "WHERE user_email = $courrielP "
 			. "AND user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key')"
+			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
 		;
 		$r = $this->bdd->query($q);
 		$d = $r->fetch();
@@ -57,7 +57,7 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$q = "SELECT user_email FROM {$this->prefixe}users "
 			. "WHERE ID = $idP "
 			. "AND user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key')"
+			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
 		;
 		$r = $this->bdd->query($q);
 		$d = $r->fetch();
@@ -80,7 +80,7 @@ class AnnuaireWP extends AnnuaireAdapter {
 		$q = "SELECT user_email FROM {$this->prefixe}users "
 			. "WHERE user_login = $loginP "
 			. "AND user_status != 1 "
-			. "AND id NOT IN (SELECT user_id FROM test_usermeta WHERE meta_key = 'activation_key')"
+			. "AND id NOT IN (SELECT user_id FROM {$this->prefixe}usermeta WHERE meta_key = 'activation_key')"
 		;
 		$r = $this->bdd->query($q);
 		$d = $r->fetch();
