@@ -10,24 +10,27 @@ class AuthPartnerPlantnet extends AuthPartner {
 	public function verifierAcces($login, $password) {
 		$login = urlencode($login); // pour les espaces dans le nom d'utilisateur
 		$password = urlencode($password);
-		$url = "https://identify.plantnet-project.org/api/security/token/create?_username=$login&_password=$password";
+		$url = "https://api.plantnet.org/v1/users/login";
 
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
 		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, array()); // nécessaire dans les versions modernes de libcurl sinon on se prend un 400 !
+		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode([
+			'login' => $login,
+			'password' => $password
+		]));
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 		$res = curl_exec($curl);
 		curl_close($curl);
 
 		// var_dump($res); exit;
 		$res = json_decode($res, true);
 		//var_dump($res); exit;
-		if (!empty($res['JWT'])) {
-			$this->jetonPartenaire = $res['JWT'];
-			$jetonDecode = $this->SSO->decoderJetonManuellement($this->jetonPartenaire);
+		if (!empty($res['token'])) {
+			$this->jetonPartenaire = $res['token'];
+			$this->data = $this->SSO->decoderJetonManuellement($this->jetonPartenaire);
 			// stockage pour traitement dans les autres méthodes
-			$this->data = $jetonDecode['details'];
 			//var_dump($this->data); exit;
 			if ( !empty($this->data['email'])) {
 				//var_dump($this->data['email']);
@@ -47,15 +50,15 @@ class AuthPartnerPlantnet extends AuthPartner {
 
 	protected function getId() {
 		// la clef primaire est le "username" dans Pl@ntNet, apparemment
-		return $this->data['username'];
+		return $this->data['userName'];
 	}
 
 	protected function getValeursProfilPartenaire() {
 		return array(
-			'nom' => $this->data['lastname'],
-			'prenom' => $this->data['firstname'],
+			'nom' => $this->data['lastName'],
+			'prenom' => $this->data['firstName'],
 			'email' => $this->data['email'],
-			'pseudo' => $this->data['username']
+			'pseudo' => $this->data['userName']
 		);
 	}
 
