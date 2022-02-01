@@ -16,8 +16,8 @@ class AuthPartnerPlantnet extends AuthPartner {
 		curl_setopt($curl, CURLOPT_URL, $url);
 		curl_setopt($curl, CURLOPT_POST, true);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode([
-			'login' => $login,
-			'password' => $password
+			'login' => urldecode($login),
+			'password' => urldecode($password)
 		]));
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
