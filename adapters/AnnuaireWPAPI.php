@@ -183,7 +183,9 @@ class AnnuaireWPAPI extends AnnuaireAdapter {
 		$id = wp_insert_user($donnees);
 
 		if (is_wp_error($id)) {
-			throw new Exception("Impossible de mettre à jour le compte utilisateur");
+			$errorCode = array_key_first( $id->errors );
+			$errorMessage = $id->errors[$errorCode][0];
+			throw new Exception("Impossible de mettre à jour le compte utilisateur: ".$errorMessage);
 		}
 
 		// métadonnées partenaire

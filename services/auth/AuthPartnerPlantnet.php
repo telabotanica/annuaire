@@ -50,7 +50,7 @@ class AuthPartnerPlantnet extends AuthPartner {
 
 	protected function getId() {
 		// la clef primaire est le "username" dans Pl@ntNet, apparemment
-		return $this->data['userName'];
+		return $this->data['userName'].'_plantnet';
 	}
 
 	protected function getValeursProfilPartenaire() {
@@ -58,7 +58,7 @@ class AuthPartnerPlantnet extends AuthPartner {
 			'nom' => $this->data['lastName'],
 			'prenom' => $this->data['firstName'],
 			'email' => $this->data['email'],
-			'pseudo' => $this->data['userName']
+			'pseudo' => $this->data['userName'].'_plantnet'
 		);
 	}
 
